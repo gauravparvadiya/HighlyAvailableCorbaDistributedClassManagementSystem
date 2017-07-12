@@ -1,0 +1,13 @@
+module RecordManagerApp
+{
+	interface RecordManager
+	{
+		string createTRecord(in string mgrID, in string firstName, in string lastName, in string address, in string phone, in string specialization, in string location);
+		string createSRecord(in string mgrID, in string firstName, in string lastName, in string coursesRegistered, in string status, in string statusDate);
+		string getRecordCounts(in string mgrID);
+		string editRecord(in string mgrID, in string recordID, in string fieldName, in string newValue);
+		string transferRecord(in string mgrID, in string recordID, in string remServerName);
+		string crashLeadServer();
+		string crashSecondaryServer();
+	};
+};
