@@ -9,6 +9,7 @@ import frontend.servers.FEUDPServerThread;
 /**
  * Front end remote interface implementation defining methods for initiating student-teacher record management.
  * @author Jyotsana Gupta
+ * @author Gauravkumar Parvadiya
  */
 public class RecordManagerFEImpl extends RecordManagerPOA 
 {
@@ -179,7 +180,7 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	}
 	
 	/**
-	 * Shuts down the lead server process to simulate a crash and initiate lead election process.
+	 * Shuts down the lead server process to simulate a crash.
 	 */
 	public String crashLeadServer()
 	{
@@ -225,6 +226,9 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			
 			//Invoking FIFO System to send first request in the queue to the lead server for processing
 			processStatus = fifoOrdSys.sendFirstRequest(leadHostname, leadPort);
+			
+			//Invoking FIFO System to remove the request just processed from the queue
+			fifoOrdSys.removeFirstRequest();
 		}
 		
 		return processStatus;

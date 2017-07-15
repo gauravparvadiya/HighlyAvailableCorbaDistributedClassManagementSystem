@@ -261,7 +261,7 @@ class ManagerClient
 		String recCount = recMgr.getRecordCounts(mgrID);
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		String opTime = dateFormat.format(new Date());
-		System.out.println("Record count: " + recCount);
+		System.out.println("Record count fetch status: " + recCount);
 		
 		//Logging the operation
 		String logText = "Get Rec Count @" + opTime + " - " + recCount;
@@ -346,12 +346,20 @@ class ManagerClient
 		CenterManagerUtil.writeToFile(fileName, logText);
 	}
 	
+	/**
+	 * Invokes remote front end method for shutting down the lead server process to simulate a crash.
+	 * @param	recMgr	Front end handle for performing remote operations
+	 */
 	private void crashLeadServer(RecordManager recMgr)
 	{
 		String opStatus = recMgr.crashLeadServer();
 		System.out.println("Lead server crash status: " + opStatus);
 	}
 	
+	/**
+	 * Invokes remote front end method for shutting down a secondary server process to simulate a crash.
+	 * @param	recMgr	Front end handle for performing remote operations
+	 */
 	private void crashSecondaryServer(RecordManager recMgr)
 	{
 		String opStatus = recMgr.crashSecondaryServer();

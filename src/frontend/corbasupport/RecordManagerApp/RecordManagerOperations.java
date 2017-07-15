@@ -63,7 +63,7 @@ public interface RecordManagerOperations
 	String transferRecord (String mgrID, String recordID, String remServerName);
   
 	/**
-	 * Shuts down the lead server process to simulate a crash and initiate lead election process.
+	 * Shuts down the lead server process to simulate a crash.
 	 */
 	String crashLeadServer ();
   

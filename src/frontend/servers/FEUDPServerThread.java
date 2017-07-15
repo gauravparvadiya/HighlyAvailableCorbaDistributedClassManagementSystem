@@ -6,10 +6,13 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import frontend.services.RecordManagerFEImpl;
 
+/**
+ * Front End's UDP server class for communicating with Failure Detection System.
+ * @author Jyotsana Gupta
+ */
 public class FEUDPServerThread extends Thread 
 {
-	private DatagramSocket serverSocket;
-	private int serverPort;
+	private final int SERVER_PORT = 6789;
 	private RecordManagerFEImpl recMgrFE;
 	
 	/**
@@ -19,8 +22,6 @@ public class FEUDPServerThread extends Thread
 	 */
 	public FEUDPServerThread(RecordManagerFEImpl recMgrFE)
 	{
-		serverSocket = null;
-		this.serverPort = 6789;
 		this.recMgrFE = recMgrFE;
 	}
 	
@@ -29,9 +30,10 @@ public class FEUDPServerThread extends Thread
 	 */
 	public void run()
 	{
+		DatagramSocket serverSocket = null;
 		try
 		{
-			serverSocket = new DatagramSocket(serverPort);
+			serverSocket = new DatagramSocket(SERVER_PORT);
 			
 			while (true)
 			{
@@ -40,7 +42,7 @@ public class FEUDPServerThread extends Thread
 				serverSocket.receive(requestPacket);
 				
 				String requestStr = new String(requestMsg);
-				if (requestStr.trim().indexOf("leader") == 0)
+				if (requestStr.trim().indexOf("leaderdetails") == 0)
 					recMgrFE.setLeadServerDetails(requestStr);
 			}
 		}

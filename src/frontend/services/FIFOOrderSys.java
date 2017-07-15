@@ -13,4 +13,9 @@ public class FIFOOrderSys
 	{
 		return null;
 	}
+	
+	public void removeFirstRequest()
+	{
+		
+	}
 }

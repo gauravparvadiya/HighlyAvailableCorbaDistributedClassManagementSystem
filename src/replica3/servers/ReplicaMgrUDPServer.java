@@ -1,4 +1,4 @@
-package replica1.servers;
+package replica3.servers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -7,8 +7,8 @@ import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import replica1.entities.Request;
-import replica1.services.impl.ReplicaMgrService;
+import replica3.entities.Request;
+import replica3.services.impl.ReplicaMgrService;
 
 /**
  * Replica Manager's UDP server class for receiving and forwarding requests for processing
@@ -17,7 +17,7 @@ import replica1.services.impl.ReplicaMgrService;
  */
 public class ReplicaMgrUDPServer
 {
-	private static final int SERVER_PORT = 6790;
+	private static final int SERVER_PORT = 6798;
 	private static ReplicaMgrService rmService = new ReplicaMgrService();
 	private static DatagramSocket serverSocket = null;
 	
