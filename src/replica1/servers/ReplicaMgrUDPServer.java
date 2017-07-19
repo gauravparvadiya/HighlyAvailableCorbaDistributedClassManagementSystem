@@ -24,7 +24,7 @@ public class ReplicaMgrUDPServer
 	public static void main(String[] args)
 	{		
 		//Launching a parallel thread for communicating with failure detection system
-		RMFailDetectUDPThread rmFDUDPThread = new RMFailDetectUDPThread(SERVER_PORT);
+		RMFailDetectUDPThread rmFDUDPThread = new RMFailDetectUDPThread();
 		rmFDUDPThread.start();
 		
 		//Performing major request processing tasks

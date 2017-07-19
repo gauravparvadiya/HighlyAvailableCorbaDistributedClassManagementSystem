@@ -7,10 +7,10 @@ public class RMFailDetectUDPThread extends Thread
 	private DatagramSocket serverSocket;
 	private int serverPort;
 	
-	public RMFailDetectUDPThread(int serverPort)
+	public RMFailDetectUDPThread()
 	{
 		serverSocket = null;
-		this.serverPort = serverPort;
+		serverPort = -1;
 	}
 	
 	public void run()
