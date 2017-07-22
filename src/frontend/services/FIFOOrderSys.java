@@ -1,6 +1,5 @@
 package frontend.services;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -24,7 +23,7 @@ public class FIFOOrderSys {
 				InetAddress host = InetAddress.getByName(leadServerHostname);
 				DatagramPacket request = new DatagramPacket(message, message.length, host, leadServerPort);
 				socket.send(request);
-
+				socket.close();
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
