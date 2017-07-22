@@ -39,7 +39,7 @@ public class RMFailDetectUDPThread extends Thread
 				//DatagramSocket serverSocket = null;
 				try {
 					while (true) {
-						sleep(10);
+						sleep(5000);
 						serverSocket = new DatagramSocket();
 						byte[] message = "RM2 is live".getBytes();
 						InetAddress host = InetAddress.getByName("localhost");
@@ -78,7 +78,6 @@ public class RMFailDetectUDPThread extends Thread
 						DatagramPacket request = new DatagramPacket(buffer, buffer.length);
 						serverSocket.setSoTimeout(10000);
 						serverSocket.receive(request);
-						System.out.println("Thread 2");
 						System.out.println(new String(request.getData()));
 						message = new String(request.getData());
 						if (message.equals("RM1 is live")) {
@@ -115,7 +114,6 @@ public class RMFailDetectUDPThread extends Thread
 						DatagramPacket request = new DatagramPacket(buffer, buffer.length);
 						serverSocket.setSoTimeout(10000);
 						serverSocket.receive(request);
-						System.out.println("Thread 3");
 						System.out.println(new String(request.getData()));
 						message = new String(request.getData());
 						if (message.equals("RM3 is live")) {
