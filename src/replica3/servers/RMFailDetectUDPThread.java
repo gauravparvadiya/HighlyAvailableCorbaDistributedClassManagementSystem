@@ -14,13 +14,15 @@ public class RMFailDetectUDPThread extends Thread
 	private static ReplicaInfo info;
 	private static Boolean statusOfRM2;
 	private static Boolean statusOfRM1;
-
+	private static String checkStatusOf;
+	
 	public RMFailDetectUDPThread() throws SocketException {
 		serverSocket = null;
 		serverPort = 6492;
 		info = new ReplicaInfo(serverPort, "localhost", false);
 		statusOfRM2 = true;
 		statusOfRM1 = true;
+		checkStatusOf = "";
 	}
 
 	// public void run() {
@@ -31,6 +33,23 @@ public class RMFailDetectUDPThread extends Thread
 	public static void main(String[] args) throws SocketException {
 
 		RMFailDetectUDPThread rm3 = new RMFailDetectUDPThread();
+		
+		Thread t4 = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				try {
+					if (checkStatusOf.equals("RM2")) {
+						//connect to RM1-T5
+					} else if (checkStatusOf.equals("RM1")) {
+						//connect to RM2-T5
+					}
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}
+		});
 		
 		// Thread to send RM1 status to RM2 and RM3 at every 10ms.
 		new Thread(new Runnable() {
@@ -86,6 +105,8 @@ public class RMFailDetectUDPThread extends Thread
 							statusOfRM2 = false;
 							if (info.getIsLeader()) {
 								// start T4
+								checkStatusOf = "RM2";
+								t4.start();
 							} else {
 								
 							}
@@ -124,6 +145,8 @@ public class RMFailDetectUDPThread extends Thread
 							statusOfRM1 = false;
 							if (info.getIsLeader()) {
 								// start T4
+								checkStatusOf = "RM1";
+								t4.start();
 							}
 						}
 					}
@@ -137,5 +160,54 @@ public class RMFailDetectUDPThread extends Thread
 				}
 			}
 		}).start();
+		
+		
+		if (!info.getIsLeader()) {
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					DatagramSocket serverSocket = null;
+					try {
+						serverSocket = new DatagramSocket(6498);
+						byte[] buffer = new byte[1000];
+						while (true) {
+							String message = null;
+							String replyMessage = null;
+							DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+							serverSocket.setSoTimeout(10000);
+							serverSocket.receive(request);
+							System.out.println(new String(request.getData()));
+							message = new String(request.getData());
+							if (message.equals("RM2")) {
+								if (statusOfRM2) {
+									replyMessage = "RM2 is live";
+								} else {
+									replyMessage = "RM2 is failed";
+								}
+							} else {
+								if (statusOfRM1) {
+									replyMessage = "RM1 is live";
+								} else {
+									replyMessage = "RM1 is failed";
+								}
+							}
+							buffer = replyMessage.getBytes();
+							DatagramPacket reply = new DatagramPacket(buffer, buffer.length, request.getAddress(),
+									request.getPort());
+							serverSocket.send(reply);
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} finally {
+						if (serverSocket != null) {
+							serverSocket.close();
+						}
+					}
+				}
+			}).start();
+		}
 	}
 }
