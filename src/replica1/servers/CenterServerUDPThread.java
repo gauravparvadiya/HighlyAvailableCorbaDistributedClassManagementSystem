@@ -10,6 +10,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import replica1.entities.Record;
+import replica1.entities.Request;
 import replica1.services.impl.RecordManagerImpl;
 
 /**
@@ -39,6 +40,7 @@ public class CenterServerUDPThread extends Thread
 	 */
 	public void run()
 	{
+		//TODO changes
 		try
 		{
 			serverSocket = new DatagramSocket(serverPort);
@@ -53,7 +55,7 @@ public class CenterServerUDPThread extends Thread
 				if (requestStr.trim().equalsIgnoreCase("get_record_count"))
 					sendRecordCount(requestPacket);
 				else
-					addReceivedRecord(requestMsg, requestPacket);
+					identifyObject(requestMsg, requestPacket);
 			}
 		}
 		catch(SocketException se)
@@ -100,49 +102,105 @@ public class CenterServerUDPThread extends Thread
 	}
 	
 	/**
-	 * Adds the received Record to the database of this Center Server and returns the addition status to the client. 
-	 * @param	requestMsg		Byte array containing the request message i.e. the target Record
+	 * Identifies the type of object received from client.
+	 * @param 	requestMsg		Byte array containing the request message
 	 * @param 	requestPacket	Datagram packet of client request
 	 */
-	private void addReceivedRecord(byte[] requestMsg, DatagramPacket requestPacket)
+	private void identifyObject(byte[] requestMsg, DatagramPacket requestPacket)
 	{
-		String addStatus = null;
+		//TODO changes
+		Object inObject = null;
+		Record targetRec = null;
+		Request newRequest = null;
+		String failStatus = null;
 		
+		//Converting the received request into Record or Request object
 		ByteArrayInputStream byteInput = new ByteArrayInputStream(requestMsg);
 		try
 		{
 			ObjectInputStream objInput = new ObjectInputStream(byteInput);
-			Record targetRec = null;
 			try
 			{
-				targetRec = (Record) objInput.readObject();
+				inObject = objInput.readObject();
 				objInput.close();
 				byteInput.close();
 				
-				//Adding the received record to this center server's database
-				boolean recAdded = recMgr.addRecord(targetRec);
-				if (recAdded)
-					addStatus = "Record addition successful";
-				else
-					addStatus = "Failed to add record";
+				targetRec = (Record) inObject;
 			}
-			catch(ClassNotFoundException cnfe)
+			catch(ClassNotFoundException reccnfe)
 			{
-				addStatus = "Record class not found";
+				try
+				{
+					newRequest = (Request) inObject;
+				}
+				catch(ClassCastException reqcce)
+				{
+					failStatus = "Record class not found or invalid request type";
+				}
 			}
-			catch(ClassCastException cce)
+			catch(ClassCastException reccce)
 			{
-				addStatus = "Invalid record type";
+				try
+				{
+					newRequest = (Request) inObject;
+				}
+				catch(ClassCastException reqcce)
+				{
+					failStatus = "Invalid object type";
+				}
 			}
 		}
 		catch(StreamCorruptedException sce)
 		{
-			addStatus = "Invalid transfer method";
+			failStatus = "Invalid method call";
 		}
 		catch(IOException ioe)
 		{
-			addStatus = "I/O exception occurred";
+			failStatus = "I/O exception occurred";
 		}
+		
+		//Sending operation status as reply to client in case of failure
+		if (failStatus != null)
+		{
+			byte[] replyMsg = failStatus.getBytes();
+			DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length, 
+															requestPacket.getAddress(), requestPacket.getPort());
+			try
+			{
+				serverSocket.send(replyPacket);
+			}
+			catch(IOException ioe)
+			{
+				System.out.println("Exception occurred while receiving record or request at UDP/IP server: " + ioe.getMessage());
+			}
+		}
+		else
+		{
+			//Adding target Record to destination server database if the object received is of Record type
+			if (targetRec != null)
+				addReceivedRecord(targetRec, requestPacket);
+			//Invoking Center Server implementation for request processing if the object received is of Request type
+			else if (newRequest != null)
+				invokeCenterServer(newRequest, requestPacket);
+		}
+	}
+	
+	/**
+	 * Adds the received Record to the database of this Center Server and returns the addition status to the client. 
+	 * @param	targetRec		Target Record to be added
+	 * @param 	requestPacket	Datagram packet of client request
+	 */
+	private void addReceivedRecord(Record targetRec, DatagramPacket requestPacket)
+	{
+		//TODO changes
+		String addStatus = null;
+		
+		//Adding the received record to this center server's database
+		boolean recAdded = recMgr.addRecord(targetRec);
+		if (recAdded)
+			addStatus = "Record addition successful";
+		else
+			addStatus = "Failed to add record";
 		
 		//Sending addition operation status as reply to client
 		byte[] replyMsg = addStatus.getBytes();
@@ -155,6 +213,69 @@ public class CenterServerUDPThread extends Thread
 		catch(IOException ioe)
 		{
 			System.out.println("Exception occurred while receiving record at UDP/IP server: " + ioe.getMessage());
+		}
+	}
+	
+	/**
+	 * Invokes the intended operation on the intended Center Server in this replica.
+	 * @param 	newRequest		Request received for processing
+	 * @param 	requestPacket	Datagram packet of client request
+	 */
+	private void invokeCenterServer(Request newRequest, DatagramPacket requestPacket)
+	{
+		//TODO changes
+		String opStatus = null;
+		String methodName = newRequest.getMethodName();
+		
+		//Calling the required method on Center Server
+		if (methodName.equalsIgnoreCase("createTRecord"))
+		{
+			opStatus = recMgr.createTRecord(newRequest.getMethodArgs().get(0)
+											,newRequest.getMethodArgs().get(1)
+											,newRequest.getMethodArgs().get(2)
+											,newRequest.getMethodArgs().get(3)
+											,newRequest.getMethodArgs().get(4)
+											,newRequest.getMethodArgs().get(5)
+											,newRequest.getMethodArgs().get(6));
+		}
+		else if (methodName.equalsIgnoreCase("createSRecord"))
+		{
+			opStatus = recMgr.createSRecord(newRequest.getMethodArgs().get(0)
+											,newRequest.getMethodArgs().get(1)
+											,newRequest.getMethodArgs().get(2)
+											,newRequest.getMethodArgs().get(3)
+											,newRequest.getMethodArgs().get(4)
+											,newRequest.getMethodArgs().get(5));
+		}
+		else if (methodName.equalsIgnoreCase("getRecordCounts"))
+		{
+			opStatus = recMgr.getRecordCounts(newRequest.getMethodArgs().get(0));
+		}
+		else if (methodName.equalsIgnoreCase("editRecord"))
+		{
+			opStatus = recMgr.editRecord(newRequest.getMethodArgs().get(0)
+										,newRequest.getMethodArgs().get(1)
+										,newRequest.getMethodArgs().get(2)
+										,newRequest.getMethodArgs().get(3));
+		}
+		else if (methodName.equalsIgnoreCase("transferRecord"))
+		{
+			opStatus = recMgr.transferRecord(newRequest.getMethodArgs().get(0)
+											,newRequest.getMethodArgs().get(1)
+											,newRequest.getMethodArgs().get(2));
+		}
+		
+		//Sending operation status as reply to client
+		byte[] replyMsg = opStatus.getBytes();
+		DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length, 
+														requestPacket.getAddress(), requestPacket.getPort());
+		try
+		{
+			serverSocket.send(replyPacket);
+		}
+		catch(IOException ioe)
+		{
+			System.out.println("Exception occurred while invoking Center Server at UDP/IP server: " + ioe.getMessage());
 		}
 	}
 }

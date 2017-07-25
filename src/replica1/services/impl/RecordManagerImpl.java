@@ -3,7 +3,6 @@ package replica1.services.impl;
 import replica1.entities.Record;
 import replica1.entities.StudentRecord;
 import replica1.entities.TeacherRecord;
-import replica1.servers.CenterServerUDPThread;
 import replica1.services.RecordManager;
 import replica1.utilities.CenterServerUtil;
 import java.text.DateFormat;
@@ -55,16 +54,7 @@ public class RecordManagerImpl implements RecordManager
 		//Populating the records hashmap with some initial hard-coded records
 		createInitialRecords(centerID);
 		
-		//Launching thread for UDP/IP communication between Center Servers
-		int serverPort = -1;		
-		if (centerID.equalsIgnoreCase("mtl"))
-			serverPort = 6791;
-		else if (centerID.equalsIgnoreCase("lvl"))
-			serverPort = 6792;
-		else if (centerID.equalsIgnoreCase("ddo"))
-			serverPort = 6793;					
-		CenterServerUDPThread udpServThread = new CenterServerUDPThread(serverPort, this);
-		udpServThread.start();
+		//TODO changes
 	}
 	
 	/**

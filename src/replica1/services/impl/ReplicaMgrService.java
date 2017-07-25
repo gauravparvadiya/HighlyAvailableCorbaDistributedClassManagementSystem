@@ -1,7 +1,7 @@
 package replica1.services.impl;
 
 import replica1.entities.Request;
-import replica1.services.RecordManager;
+import replica1.servers.CenterServerUDPThread;
 
 /**
  * Replica manager service class for parsing, processing and initiating broadcasting of requests.
@@ -51,6 +51,16 @@ public class ReplicaMgrService
 		lvlRecMgr = new RecordManagerImpl("lvl");
 		ddoRecMgr = new RecordManagerImpl("ddo");
 		
+		//TODO changes
+		
+		//Launching UDP/IP communication threads for all Center Servers
+		CenterServerUDPThread mtlUdpServThread = new CenterServerUDPThread(6791, mtlRecMgr);
+		CenterServerUDPThread lvlUdpServThread = new CenterServerUDPThread(6792, lvlRecMgr);
+		CenterServerUDPThread ddoUdpServThread = new CenterServerUDPThread(6793, ddoRecMgr);
+		mtlUdpServThread.start();
+		lvlUdpServThread.start();
+		ddoUdpServThread.start();
+		
 		//Launching FIFO broadcast system
 		fifoBroadcastSys = new FIFOBroadcastSys();
 	}
@@ -92,20 +102,37 @@ public class ReplicaMgrService
 	public String processRequest(Request newRequest)
 	{
 		String processStatus = null;
-		RecordManager recMgr = null;
+		String remServHostname = "localhost";
+		int remServPort = -1;
+		
+		//TODO changes
 		
 		//Finding the Center Server to process the request
 		String mgrID = newRequest.getMethodArgs().get(0);
 		String centerID = mgrID.substring(0, 3);		
 		if (centerID.equalsIgnoreCase("MTL"))
-			recMgr = mtlRecMgr;
+			remServPort = 6791;
 		else if (centerID.equalsIgnoreCase("LVL"))
-			recMgr = lvlRecMgr;
+			remServPort = 6792;
 		else if (centerID.equalsIgnoreCase("DDO"))
-			recMgr = ddoRecMgr;
-			
-		//Invoking the intender Center Server for processing
-		processStatus = invokeCenterServer(newRequest, recMgr);
+			remServPort = 6793;
+		
+		//Launching a thread for sending the request to the intended Center Server for processing
+		ReqProcessClientThread recProcClientThread = new ReqProcessClientThread(newRequest, remServHostname, remServPort);
+		recProcClientThread.start();
+		
+		//Waiting for the request processing thread to finish its execution
+		try
+		{
+			recProcClientThread.join();
+		}
+		catch(InterruptedException ie)
+		{
+			System.out.println("Exception occurred while processing request: " + ie.getMessage());
+		}
+		
+		//Checking the send operation status
+		processStatus = recProcClientThread.getProcessStatus();
 		
 		//Additional processing for lead server
 		if (getIsLeader())
@@ -120,54 +147,5 @@ public class ReplicaMgrService
 		return processStatus;
 	}
 	
-	/**
-	 * Invokes the intended operation on the intended Center Server in this replica.
-	 * @param 	newRequest	Request received for processing
-	 * @param 	recMgr		Instance of the intended Center Server
-	 * @return	Success or failure message based on the processing status of the request
-	 */
-	private String invokeCenterServer(Request newRequest, RecordManager recMgr)
-	{
-		String opStatus = null;
-		String methodName = newRequest.getMethodName();
-		
-		if (methodName.equalsIgnoreCase("createTRecord"))
-		{
-			opStatus = recMgr.createTRecord(newRequest.getMethodArgs().get(0)
-											,newRequest.getMethodArgs().get(1)
-											,newRequest.getMethodArgs().get(2)
-											,newRequest.getMethodArgs().get(3)
-											,newRequest.getMethodArgs().get(4)
-											,newRequest.getMethodArgs().get(5)
-											,newRequest.getMethodArgs().get(6));
-		}
-		else if (methodName.equalsIgnoreCase("createSRecord"))
-		{
-			opStatus = recMgr.createSRecord(newRequest.getMethodArgs().get(0)
-											,newRequest.getMethodArgs().get(1)
-											,newRequest.getMethodArgs().get(2)
-											,newRequest.getMethodArgs().get(3)
-											,newRequest.getMethodArgs().get(4)
-											,newRequest.getMethodArgs().get(5));
-		}
-		else if (methodName.equalsIgnoreCase("getRecordCounts"))
-		{
-			opStatus = recMgr.getRecordCounts(newRequest.getMethodArgs().get(0));
-		}
-		else if (methodName.equalsIgnoreCase("editRecord"))
-		{
-			opStatus = recMgr.editRecord(newRequest.getMethodArgs().get(0)
-										,newRequest.getMethodArgs().get(1)
-										,newRequest.getMethodArgs().get(2)
-										,newRequest.getMethodArgs().get(3));
-		}
-		else if (methodName.equalsIgnoreCase("transferRecord"))
-		{
-			opStatus = recMgr.transferRecord(newRequest.getMethodArgs().get(0)
-											,newRequest.getMethodArgs().get(1)
-											,newRequest.getMethodArgs().get(2));
-		}
-		
-		return opStatus;
-	}
+	//TODO changes
 }

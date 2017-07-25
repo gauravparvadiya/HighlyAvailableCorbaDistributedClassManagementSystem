@@ -8,43 +8,45 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import replica1.entities.Record;
+import replica1.entities.Request;
+
+//TODO changes
 
 /**
- * Client thread class for transferring a record from one Center Server to another through UDP/IP communication.
+ * Client thread class for sending a Request for processing to a Center Server through UDP/IP communication.
  * @author Jyotsana Gupta
  */
-public class RecTransferClientThread extends Thread
+public class ReqProcessClientThread extends Thread
 {
-	private Record targetRec;
+	private Request newRequest;
 	private String hostname;
 	private int port;
-	private String transferStatus;
+	private String processStatus;
 	
 	/**
 	 * Constructor with all the attribute values provided as parameters.
-	 * @param 	targetRec		The record to be transferred
-	 * @param 	hostname		Hostname of the server contacted by this thread
-	 * @param 	port			Port number of the server contacted by this thread
+	 * @param 	newRequest	The request to be processed
+	 * @param 	hostname	Hostname of the Center Server contacted by this thread
+	 * @param 	port		Port number of the Center Server contacted by this thread
 	 */
-	public RecTransferClientThread(Record targetRec, String hostname, int port)
+	public ReqProcessClientThread(Request newRequest, String hostname, int port)
 	{
-		this.targetRec = targetRec;
+		this.newRequest = newRequest;
 		this.hostname = hostname;
 		this.port = port;
 	}
 	
 	/**
-	 * Fetches the transfer status of this thread.
-	 * @return	Transfer status of this thread
+	 * Fetches the request processing status of this thread.
+	 * @return	Request processing status of this thread
 	 */
-	public String getTransferStatus()
+	public String getProcessStatus()
 	{
-		return transferStatus;
+		return processStatus;
 	}
 	
 	/**
-	 * Sends the target record to the remote Center Server and receives the transfer status message in return 
+	 * Sends the request to the remote Center Server and receives the processing status message in return 
 	 * using UDP/IP socket communication.
 	 */
 	public void run()
@@ -59,7 +61,7 @@ public class RecTransferClientThread extends Thread
 			
 			ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
 			ObjectOutputStream objOutput = new ObjectOutputStream(byteOutput);
-			objOutput.writeObject(targetRec);
+			objOutput.writeObject(newRequest);
 			byte[] objReqMsg = byteOutput.toByteArray();
 			objOutput.close();
 			byteOutput.close();
@@ -71,22 +73,22 @@ public class RecTransferClientThread extends Thread
 			DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length);	
 			clientSocket.receive(replyPacket);
 			
-			transferStatus = new String(replyMsg).trim();			
+			processStatus = new String(replyMsg).trim();
 		}
 		catch(SocketException se)
 		{
-			System.out.println("Exception occurred while sending record from UDP/IP client: " + se.getMessage());
-			transferStatus = "Failed to transfer record";
+			System.out.println("Exception occurred while sending request from UDP/IP client: " + se.getMessage());
+			processStatus = "Failed to process request";
 		}
 		catch(UnknownHostException uhe)
 		{
-			System.out.println("Exception occurred while sending record from UDP/IP client: " + uhe.getMessage());
-			transferStatus = "Failed to transfer record";
+			System.out.println("Exception occurred while sending request from UDP/IP client: " + uhe.getMessage());
+			processStatus = "Failed to process request";
 		}
 		catch(IOException ioe)
 		{
-			System.out.println("Exception occurred while sending record from UDP/IP client: " + ioe.getMessage());
-			transferStatus = "Failed to transfer record";
+			System.out.println("Exception occurred while sending request from UDP/IP client: " + ioe.getMessage());
+			processStatus = "Failed to process request";
 		}
 		finally
 		{
