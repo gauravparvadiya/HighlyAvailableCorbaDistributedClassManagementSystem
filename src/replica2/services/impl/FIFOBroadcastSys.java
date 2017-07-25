@@ -7,6 +7,11 @@ import java.util.List;
 
 import replica2.entities.Request;
 
+/**
+ * FIFO broadcast defining methods to broadcast request, get and set secondary server details.
+ * @author Hirangi Naik
+ */
+
 public class FIFOBroadcastSys {
 
 	private String[] hostname;
