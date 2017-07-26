@@ -1,10 +1,9 @@
-package replica2.services.impl;
+package replica1.services;
 
-import replica2.entities.Record;
-import replica2.entities.StudentRecord;
-import replica2.entities.TeacherRecord;
-import replica2.services.RecordManager;
-import replica2.utilities.CenterServerUtil;
+import replica1.entities.Record;
+import replica1.entities.StudentRecord;
+import replica1.entities.TeacherRecord;
+import replica1.utilities.CenterServerUtil;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,13 +13,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import replica2.servers.CenterServerUDPThread;
 
 /**
  * Center server implementation defining methods for student-teacher record management.
  * @author Jyotsana Gupta
  */
-public class RecordManagerImpl implements RecordManager
+public class RecordManagerImpl
 {	
 	/**
 	 * Counter for unique ID of student-teacher records for a server.
@@ -54,17 +52,6 @@ public class RecordManagerImpl implements RecordManager
 		
 		//Populating the records hashmap with some initial hard-coded records
 		createInitialRecords(centerID);
-		
-		//Launching thread for UDP/IP communication between Center Servers
-		int serverPort = -1;		
-		if (centerID.equalsIgnoreCase("mtl"))
-			serverPort = 6795;
-		else if (centerID.equalsIgnoreCase("lvl"))
-			serverPort = 6796;
-		else if (centerID.equalsIgnoreCase("ddo"))
-			serverPort = 6797;					
-		CenterServerUDPThread udpServThread = new CenterServerUDPThread(serverPort, this);
-		udpServThread.start();
 	}
 	
 	/**

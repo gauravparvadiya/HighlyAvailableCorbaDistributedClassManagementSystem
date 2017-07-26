@@ -178,6 +178,21 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 		String opStatus = processRequest(methodName, methodArgs);
 		return opStatus;
 	}
+	
+	/**
+	 * Simulates a Center Server crash scenario.
+	 * @param 	mgrID	Center Manager ID to identify the Center Server to be crashed
+	 * @return	Success or failure status message of the dummy request performed during the crash
+	 */
+	public String crashCenterServer(String mgrID)
+	{
+		String methodName = "crashCenterServer";
+		List<String> methodArgs = new ArrayList<String>();
+		methodArgs.add(mgrID);
+		
+		String opStatus = processRequest(methodName, methodArgs);
+		return opStatus;
+	}
 
 	/**
 	 * Shuts down the lead server process to simulate a crash.

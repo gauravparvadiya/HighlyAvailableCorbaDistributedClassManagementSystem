@@ -1,11 +1,16 @@
-package replica1.services.impl;
+package replica2.services;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.List;
 
-import replica1.entities.Request;
+import replica2.entities.Request;
+
+/**
+ * FIFO broadcast defining methods to broadcast request, get and set secondary server details.
+ * @author Hirangi Naik
+ */
 
 public class FIFOBroadcastSys {
 

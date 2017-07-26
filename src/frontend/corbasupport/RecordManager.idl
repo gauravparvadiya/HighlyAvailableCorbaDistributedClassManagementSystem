@@ -7,6 +7,7 @@ module RecordManagerApp
 		string getRecordCounts(in string mgrID);
 		string editRecord(in string mgrID, in string recordID, in string fieldName, in string newValue);
 		string transferRecord(in string mgrID, in string recordID, in string remServerName);
+		string crashCenterServer(in string mgrID);
 		string crashLeadServer();
 		string crashSecondaryServer();
 	};

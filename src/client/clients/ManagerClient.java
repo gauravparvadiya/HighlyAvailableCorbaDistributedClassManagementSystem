@@ -60,9 +60,10 @@ class ManagerClient
 			System.out.println("3. Get Record Counts of All Servers");
 			System.out.println("4. Edit Record");
 			System.out.println("5. Transfer Record");
-			System.out.println("6. Crash Leader Server");
-			System.out.println("7. Crash a Secondary Server");
-			System.out.println("8. Exit");
+			System.out.println("6. Crash a Center Server");
+			System.out.println("7. Crash Leader Server");
+			System.out.println("8. Crash a Secondary Server");
+			System.out.println("9. Exit");
 			try
 			{
 				operationChoice = Integer.parseInt(input.nextLine());
@@ -84,11 +85,13 @@ class ManagerClient
 						break;
 				case 5:	mgrClient.transferRecord(mgrID, recMgr, input);
 						break;
-				case 6:	mgrClient.crashLeadServer(recMgr);
+				case 6: mgrClient.crashCenterServer(mgrID, recMgr);
 						break;
-				case 7:	mgrClient.crashSecondaryServer(recMgr);
+				case 7:	mgrClient.crashLeadServer(recMgr);
 						break;
-				case 8:	input.close();
+				case 8:	mgrClient.crashSecondaryServer(recMgr);
+						break;
+				case 9:	input.close();
 						System.exit(0);
 				default: System.out.println("Invalid choice.");
 			}		
@@ -344,6 +347,17 @@ class ManagerClient
 										+ " | SRV: " + remServerName 
 										+ ") @" + opTime + " - " + opStatus;
 		CenterManagerUtil.writeToFile(fileName, logText);
+	}
+	
+	/**
+	 * Invokes remote front end method for simulating a Center Server crash.
+	 * @param 	mgrID	Unique ID of the center manager who performs this operation
+	 * @param 	recMgr	Front end handle for performing remote operations
+	 */
+	private void crashCenterServer(String mgrID, RecordManager recMgr)
+	{
+		String opStatus = recMgr.crashCenterServer(mgrID);
+		System.out.println("Center Server crash status: " + opStatus);
 	}
 	
 	/**

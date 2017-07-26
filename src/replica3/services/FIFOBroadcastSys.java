@@ -1,4 +1,4 @@
-package replica3.services.impl;
+package replica3.services;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

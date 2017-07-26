@@ -1,10 +1,9 @@
-package replica1.services.impl;
+package replica2.services;
 
-import replica1.entities.Record;
-import replica1.entities.StudentRecord;
-import replica1.entities.TeacherRecord;
-import replica1.services.RecordManager;
-import replica1.utilities.CenterServerUtil;
+import replica2.entities.Record;
+import replica2.entities.StudentRecord;
+import replica2.entities.TeacherRecord;
+import replica2.utilities.CenterServerUtil;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,7 +18,7 @@ import java.util.Map;
  * Center server implementation defining methods for student-teacher record management.
  * @author Jyotsana Gupta
  */
-public class RecordManagerImpl implements RecordManager
+public class RecordManagerImpl
 {	
 	/**
 	 * Counter for unique ID of student-teacher records for a server.
@@ -53,8 +52,6 @@ public class RecordManagerImpl implements RecordManager
 		
 		//Populating the records hashmap with some initial hard-coded records
 		createInitialRecords(centerID);
-		
-		//TODO changes
 	}
 	
 	/**
@@ -622,9 +619,9 @@ public class RecordManagerImpl implements RecordManager
 		Map<String, List<String>> serverConnDetails = new HashMap<String, List<String>>();
 		
 		//Hard-coded connection details, for now; later, could be changed to file read
-		serverConnDetails.put("MTL", new ArrayList<String>(Arrays.asList("localhost", "6791")));
-		serverConnDetails.put("LVL", new ArrayList<String>(Arrays.asList("localhost", "6792")));
-		serverConnDetails.put("DDO", new ArrayList<String>(Arrays.asList("localhost", "6793")));
+		serverConnDetails.put("MTL", new ArrayList<String>(Arrays.asList("localhost", "6795")));
+		serverConnDetails.put("LVL", new ArrayList<String>(Arrays.asList("localhost", "6796")));
+		serverConnDetails.put("DDO", new ArrayList<String>(Arrays.asList("localhost", "6797")));
 		
 		return serverConnDetails;
 	}
@@ -873,11 +870,11 @@ public class RecordManagerImpl implements RecordManager
 		String port = null;
 		
 		if (centerID.equalsIgnoreCase("MTL"))
-			port = "6791";
+			port = "6795";
 		else if (centerID.equalsIgnoreCase("LVL"))
-			port = "6792";
+			port = "6796";
 		else if (centerID.equalsIgnoreCase("DDO"))
-			port = "6793";
+			port = "6797";
 		
 		serverDetails[0] = hostname;
 		serverDetails[1] = port;

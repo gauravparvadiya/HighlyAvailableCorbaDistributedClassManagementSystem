@@ -1,4 +1,4 @@
-package replica1.services.impl;
+package replica2.services;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import replica1.entities.Record;
+import replica2.entities.Record;
 
 /**
  * Client thread class for transferring a record from one Center Server to another through UDP/IP communication.
@@ -76,17 +76,14 @@ public class RecTransferClientThread extends Thread
 		catch(SocketException se)
 		{
 			System.out.println("Exception occurred while sending record from UDP/IP client: " + se.getMessage());
-			transferStatus = "Failed to transfer record";
 		}
 		catch(UnknownHostException uhe)
 		{
 			System.out.println("Exception occurred while sending record from UDP/IP client: " + uhe.getMessage());
-			transferStatus = "Failed to transfer record";
 		}
 		catch(IOException ioe)
 		{
 			System.out.println("Exception occurred while sending record from UDP/IP client: " + ioe.getMessage());
-			transferStatus = "Failed to transfer record";
 		}
 		finally
 		{

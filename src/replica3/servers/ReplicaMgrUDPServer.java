@@ -8,7 +8,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import replica3.entities.Request;
-import replica3.services.impl.ReplicaMgrService;
+import replica3.services.ReplicaMgrService;
 
 /**
  * Replica Manager's UDP server class for receiving and forwarding requests for processing
@@ -84,7 +84,11 @@ public class ReplicaMgrUDPServer
 				byteInput.close();
 				
 				//Forwarding the request to service module for processing
-				processStatus = rmService.processRequest(newRequest);
+				String methodName = newRequest.getMethodName();
+				if (methodName.equalsIgnoreCase("crashCenterServer"))
+					processStatus = rmService.crashCenterServer(newRequest);
+				else
+					processStatus = rmService.processRequest(newRequest);
 			}
 			catch(ClassNotFoundException cnfe)
 			{

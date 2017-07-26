@@ -1,4 +1,4 @@
-package replica1.services.impl;
+package replica2.services;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,10 +7,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import replica1.entities.Request;
-
-//TODO changes
+import replica2.entities.Request;
 
 /**
  * Client thread class for sending a Request for processing to a Center Server through UDP/IP communication.
@@ -69,11 +68,18 @@ public class ReqProcessClientThread extends Thread
 			DatagramPacket requestPacket = new DatagramPacket(objReqMsg, objReqMsg.length, serverAddr, serverPort);
 			clientSocket.send(requestPacket);
 			
-			byte[] replyMsg = new byte[1000];
-			DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length);	
-			clientSocket.receive(replyPacket);
-			
-			processStatus = new String(replyMsg).trim();
+			clientSocket.setSoTimeout(1000);
+			try
+			{
+				byte[] replyMsg = new byte[1000];
+				DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length);	
+				clientSocket.receive(replyPacket);
+				processStatus = new String(replyMsg).trim();
+			}
+			catch(SocketTimeoutException ste)
+			{
+				processStatus = "Processing timeout exceeded";
+			}
 		}
 		catch(SocketException se)
 		{

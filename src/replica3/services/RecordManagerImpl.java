@@ -1,8 +1,6 @@
-package replica3.services.impl;
+package replica3.services;
 
-import replica3.services.RecordManager;
-
-public class RecordManagerImpl implements RecordManager
+public class RecordManagerImpl
 {	
 	private String centerID;
 		

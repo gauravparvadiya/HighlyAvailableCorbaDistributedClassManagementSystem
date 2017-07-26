@@ -1,4 +1,4 @@
-package replica2.services.impl;
+package replica2.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

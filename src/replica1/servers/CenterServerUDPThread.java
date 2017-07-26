@@ -11,10 +11,10 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import replica1.entities.Record;
 import replica1.entities.Request;
-import replica1.services.impl.RecordManagerImpl;
+import replica1.services.RecordManagerImpl;
 
 /**
- * Center Server thread class for UDP/IP communication between Center Servers.
+ * Center Server thread class for UDP/IP communication between Center Servers and with Replica Manager.
  * @author Jyotsana Gupta
  */
 public class CenterServerUDPThread extends Thread
@@ -36,11 +36,10 @@ public class CenterServerUDPThread extends Thread
 	}
 	
 	/**
-	 * Receives and responds to requests from another center server using UDP/IP socket communication.
+	 * Receives and responds to requests from another center server or replica manager using UDP/IP socket communication.
 	 */
 	public void run()
 	{
-		//TODO changes
 		try
 		{
 			serverSocket = new DatagramSocket(serverPort);
@@ -108,7 +107,6 @@ public class CenterServerUDPThread extends Thread
 	 */
 	private void identifyObject(byte[] requestMsg, DatagramPacket requestPacket)
 	{
-		//TODO changes
 		Object inObject = null;
 		Record targetRec = null;
 		Request newRequest = null;
@@ -192,7 +190,6 @@ public class CenterServerUDPThread extends Thread
 	 */
 	private void addReceivedRecord(Record targetRec, DatagramPacket requestPacket)
 	{
-		//TODO changes
 		String addStatus = null;
 		
 		//Adding the received record to this center server's database
@@ -223,7 +220,6 @@ public class CenterServerUDPThread extends Thread
 	 */
 	private void invokeCenterServer(Request newRequest, DatagramPacket requestPacket)
 	{
-		//TODO changes
 		String opStatus = null;
 		String methodName = newRequest.getMethodName();
 		
