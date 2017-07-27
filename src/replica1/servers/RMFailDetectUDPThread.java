@@ -99,8 +99,10 @@ public class RMFailDetectUDPThread extends Thread {
 			@Override
 			public void run() {
 				// DatagramSocket serverSocket = null;
-				try {
-					while (true) {
+
+				while (true) {
+
+					try {
 						sleep(5000);
 						serverSocket = new DatagramSocket();
 						byte[] message = "RM1 is live".getBytes();
@@ -113,15 +115,11 @@ public class RMFailDetectUDPThread extends Thread {
 						serverSocket = new DatagramSocket();
 						request = new DatagramPacket(message, message.length, host, 6492);
 						serverSocket.send(request);
-						serverSocket.close();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-					if (serverSocket != null) {
-						serverSocket.close();
-					}
+					serverSocket.close();
 				}
 			}
 		}).start();
@@ -131,37 +129,36 @@ public class RMFailDetectUDPThread extends Thread {
 			@Override
 			public void run() {
 				DatagramSocket serverSocket = null;
-				try {
+				byte[] buffer = new byte[1000];
 
-					serverSocket = new DatagramSocket(6493);
-					byte[] buffer = new byte[1000];
-
-					while (true) {
-						String message = null;
-						DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+				while (true) {
+					String message = null;
+					DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+					try {
+						message = null;
+						serverSocket = new DatagramSocket(6493);
 						serverSocket.setSoTimeout(10000);
 						serverSocket.receive(request);
-						message = new String(request.getData());
-						System.out.println(message);
-						if (message.trim().equalsIgnoreCase("RM2 is live")) {
-							statusOfRM2 = true;
-						} else {
-							statusOfRM2 = false;
-							if (info.getIsLeader()) {
-								// start T4
-								checkStatusOf = "RM2";
-								t4.start();
-							}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					message = new String(request.getData());
+					System.out.println(message);
+					if (message.trim().equalsIgnoreCase("RM2 is live")) {
+						statusOfRM2 = true;
+					} else {
+						statusOfRM2 = false;
+						if (info.getIsLeader()) {
+							// start T4
+							checkStatusOf = "RM2";
+							t4.start();
 						}
 					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-					if (serverSocket != null) {
-						serverSocket.close();
-					}
+					serverSocket.close();
 				}
+
 			}
 		}).start();
 
@@ -201,8 +198,7 @@ public class RMFailDetectUDPThread extends Thread {
 				}
 			}
 		}).start();
-		
-		
+
 		if (!info.getIsLeader()) {
 			new Thread(new Runnable() {
 

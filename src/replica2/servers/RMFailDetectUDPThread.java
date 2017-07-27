@@ -1,5 +1,6 @@
 package replica2.servers;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -130,37 +131,41 @@ public class RMFailDetectUDPThread extends Thread {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				DatagramSocket serverSocket = null;
-				try {
-					serverSocket = new DatagramSocket(6491);
-					byte[] buffer = new byte[1000];
 
-					while (true) {
-						String message = null;
-						DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+				DatagramSocket serverSocket = null;
+				DatagramPacket request = null;
+				String message = null;
+
+				while (true) {
+					message = null;
+
+					try {
+						serverSocket = new DatagramSocket(6491);
+						byte[] buffer = new byte[1000];
+						request = new DatagramPacket(buffer, buffer.length);
 						serverSocket.setSoTimeout(10000);
 						serverSocket.receive(request);
 						System.out.println(new String(request.getData()));
 						message = new String(request.getData());
-						if (message.equals("RM1 is live")) {
-							statusOfRM1 = true;
-						} else {
-							statusOfRM1 = false;
-							if (info.getIsLeader()) {
-								// start T4
-								checkStatusOf = "RM1";
-								t4.start();
-							}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					if (message.equals("RM1 is live")) {
+						statusOfRM1 = true;
+					} else {
+						statusOfRM1 = false;
+						if (info.getIsLeader()) {
+							// start T4
+							checkStatusOf = "RM1";
+							t4.start();
 						}
 					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-					if (serverSocket != null) {
-						serverSocket.close();
-					}
+					serverSocket.close();
+
 				}
+
 			}
 		}).start();
 
@@ -170,33 +175,33 @@ public class RMFailDetectUDPThread extends Thread {
 			public void run() {
 				DatagramSocket serverSocket = null;
 				DatagramPacket request = null;
-				String message = null;	
+				String message = null;
 
-					while (true) {
-						try {
-							serverSocket = new DatagramSocket(6496);
-							message = null;
-							byte[] buffer = new byte[1000];
-							request = new DatagramPacket(buffer, buffer.length);
-							serverSocket.setSoTimeout(10000);
-							serverSocket.receive(request);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						
-						System.out.println(new String(request.getData()));
-						message = new String(request.getData());
-						if (message.trim().equalsIgnoreCase("RM3 is live")) {
-							statusOfRM3 = true;
-						} else {
-							statusOfRM3 = false;
-							if (info.getIsLeader()) {
-								// start T4
-  								t4.start();
-							}
-						}
-						serverSocket.close();
+				while (true) {
+					try {
+						serverSocket = new DatagramSocket(6496);
+						message = null;
+						byte[] buffer = new byte[1000];
+						request = new DatagramPacket(buffer, buffer.length);
+						serverSocket.setSoTimeout(10000);
+						serverSocket.receive(request);
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
+
+					System.out.println(new String(request.getData()));
+					message = new String(request.getData());
+					if (message.trim().equalsIgnoreCase("RM3 is live")) {
+						statusOfRM3 = true;
+					} else {
+						statusOfRM3 = false;
+						if (info.getIsLeader()) {
+							// start T4
+							t4.start();
+						}
+					}
+					serverSocket.close();
+				}
 			}
 		}).start();
 
@@ -207,44 +212,49 @@ public class RMFailDetectUDPThread extends Thread {
 				public void run() {
 					// TODO Auto-generated method stub
 					DatagramSocket serverSocket = null;
-					try {
-						serverSocket = new DatagramSocket(6497);
-						byte[] buffer = new byte[1000];
-						while (true) {
-							String message = null;
-							String replyMessage = null;
-							DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+
+					byte[] buffer = new byte[1000];
+					while (true) {
+						String message = null;
+						String replyMessage = null;
+						DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+						try {
+							message = null;
+							serverSocket = new DatagramSocket(6497);
 							serverSocket.setSoTimeout(10000);
 							serverSocket.receive(request);
-							System.out.println(new String(request.getData()));
-							message = new String(request.getData());
-							if (message.trim().equalsIgnoreCase("RM3")) {
-								if (statusOfRM3) {
-									System.out.println("in thread 5");
-									replyMessage = "RM3 is live";
-								} else {
-									System.out.println("in thread 5");
-									replyMessage = "RM3 is failed";
-								}
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+						System.out.println(new String(request.getData()));
+						message = new String(request.getData());
+						if (message.trim().equalsIgnoreCase("RM3")) {
+							if (statusOfRM3) {
+								System.out.println("in thread 5");
+								replyMessage = "RM3 is live";
 							} else {
-								if (statusOfRM1) {
-									replyMessage = "RM1 is live - T5";
-								} else {
-									replyMessage = "RM1 is failed - T5";
-								}
+								System.out.println("in thread 5");
+								replyMessage = "RM3 is failed";
 							}
-							buffer = replyMessage.getBytes();
-							DatagramPacket reply = new DatagramPacket(buffer, buffer.length, request.getAddress(),
-									request.getPort());
+						} else {
+							if (statusOfRM1) {
+								replyMessage = "RM1 is live - T5";
+							} else {
+								replyMessage = "RM1 is failed - T5";
+							}
+						}
+						buffer = replyMessage.getBytes();
+						DatagramPacket reply = new DatagramPacket(buffer, buffer.length, request.getAddress(),
+								request.getPort());
+						try {
 							serverSocket.send(reply);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} finally {
-						if (serverSocket != null) {
-							serverSocket.close();
-						}
+						serverSocket.close();
 					}
 				}
 			}).start();
