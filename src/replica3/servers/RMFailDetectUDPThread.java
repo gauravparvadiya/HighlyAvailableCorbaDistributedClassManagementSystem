@@ -25,29 +25,68 @@ public class RMFailDetectUDPThread extends Thread
 		checkStatusOf = "";
 	}
 
-	// public void run() {
-	//
-	//
-	// }
-
 	public static void main(String[] args) throws SocketException {
 
 		RMFailDetectUDPThread rm3 = new RMFailDetectUDPThread();
 		
 		Thread t4 = new Thread(new Runnable() {
+			Boolean status = true;
 
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				try {
-					if (checkStatusOf.equals("RM2")) {
-						//connect to RM1-T5
-					} else if (checkStatusOf.equals("RM1")) {
-						//connect to RM2-T5
+				while (status) {
+					try {
+						System.out.println(checkStatusOf);
+						if (checkStatusOf.equals("RM2")) {
+							DatagramSocket socket = new DatagramSocket();
+							byte[] message = "RM2".getBytes();
+							InetAddress host = InetAddress.getByName("localhost");
+							DatagramPacket request = new DatagramPacket(message, message.length, host, 6499);
+							socket.send(request);
+
+							byte[] replyMessage = new byte[1000];
+							DatagramPacket reply = new DatagramPacket(replyMessage, replyMessage.length);
+							socket.receive(reply);
+
+							if (new String(reply.getData()).trim().equalsIgnoreCase("RM2 is live")) {
+								statusOfRM1 = true;
+							} else {
+								// Restart RM2
+								System.out.println("Restart RM2");
+							}
+							socket.close();
+
+						} else if (checkStatusOf.equals("RM1")) {
+							// connect to RM2-T5
+
+							DatagramSocket socket = new DatagramSocket();
+							byte[] message = "RM1".getBytes();
+							InetAddress host = InetAddress.getByName("localhost");
+							DatagramPacket request = new DatagramPacket(message, message.length, host, 6497);
+							socket.send(request);
+
+							byte[] replyMessage = new byte[1000];
+							DatagramPacket reply = new DatagramPacket(replyMessage, replyMessage.length);
+							socket.receive(reply);
+							System.out.println("here 1");
+							if (new String(reply.getData()).trim().equalsIgnoreCase("RM1 is live")) {
+								statusOfRM1 = true;
+								System.out.println("here 2");
+							} else {
+								// Restart RM2
+								System.out.println("here 3");
+								System.out.println("Restart RM1");
+							}
+							socket.close();
+						}
+					} catch (Exception e) {
+						// TODO: handle exception
 					}
-				} catch (Exception e) {
-					// TODO: handle exception
+
+					status = false;
 				}
+
 			}
 		});
 		

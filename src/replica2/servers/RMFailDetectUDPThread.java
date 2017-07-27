@@ -20,7 +20,7 @@ public class RMFailDetectUDPThread extends Thread {
 		serverPort = 6491;
 		info = new ReplicaInfo(serverPort, "localhost", false);
 		statusOfRM1 = true;
-		statusOfRM3 = true;
+		statusOfRM3 = false;
 		checkStatusOf = "";
 	}
 
@@ -34,19 +34,63 @@ public class RMFailDetectUDPThread extends Thread {
 		RMFailDetectUDPThread rm2 = new RMFailDetectUDPThread();
 
 		Thread t4 = new Thread(new Runnable() {
+			Boolean status = true;
 
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				try {
-					if (checkStatusOf.equals("RM1")) {
-						// connect to RM3-T5
-					} else if (checkStatusOf.equals("RM3")) {
-						// connect to RM1-T5
+				while (status) {
+					try {
+						System.out.println(checkStatusOf);
+						if (checkStatusOf.equals("RM1")) {
+							DatagramSocket socket = new DatagramSocket();
+							byte[] message = "RM1".getBytes();
+							InetAddress host = InetAddress.getByName("localhost");
+							DatagramPacket request = new DatagramPacket(message, message.length, host, 6498);
+							socket.send(request);
+
+							byte[] replyMessage = new byte[1000];
+							DatagramPacket reply = new DatagramPacket(replyMessage, replyMessage.length);
+							socket.receive(reply);
+
+							if (new String(reply.getData()).trim().equalsIgnoreCase("RM1 is live")) {
+								statusOfRM1 = true;
+							} else {
+								// Restart RM2
+								System.out.println("Restart RM1");
+							}
+							socket.close();
+
+						} else if (checkStatusOf.equals("RM3")) {
+							// connect to RM2-T5
+
+							DatagramSocket socket = new DatagramSocket();
+							byte[] message = "RM3".getBytes();
+							InetAddress host = InetAddress.getByName("localhost");
+							DatagramPacket request = new DatagramPacket(message, message.length, host, 6499);
+							socket.send(request);
+
+							byte[] replyMessage = new byte[1000];
+							DatagramPacket reply = new DatagramPacket(replyMessage, replyMessage.length);
+							socket.receive(reply);
+							System.out.println("here 1");
+							if (new String(reply.getData()).trim().equalsIgnoreCase("RM3 is live")) {
+								statusOfRM3 = true;
+								System.out.println("here 2");
+							} else {
+								// Restart RM2
+								System.out.println("here 3");
+								System.out.println("Restart RM3");
+							}
+							socket.close();
+						}
+					} catch (Exception e) {
+						// TODO: handle exception
 					}
-				} catch (Exception e) {
-					// TODO: handle exception
+
+					status = false;
 				}
+
 			}
 		});
 
@@ -125,36 +169,34 @@ public class RMFailDetectUDPThread extends Thread {
 			@Override
 			public void run() {
 				DatagramSocket serverSocket = null;
-				try {
-					serverSocket = new DatagramSocket(6496);
-					byte[] buffer = new byte[1000];
+				DatagramPacket request = null;
+				String message = null;	
 
 					while (true) {
-						String message = null;
-						DatagramPacket request = new DatagramPacket(buffer, buffer.length);
-						serverSocket.setSoTimeout(10000);
-						serverSocket.receive(request);
+						try {
+							serverSocket = new DatagramSocket(6496);
+							message = null;
+							byte[] buffer = new byte[1000];
+							request = new DatagramPacket(buffer, buffer.length);
+							serverSocket.setSoTimeout(10000);
+							serverSocket.receive(request);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
 						System.out.println(new String(request.getData()));
 						message = new String(request.getData());
-						if (message.equals("RM3 is live")) {
+						if (message.trim().equalsIgnoreCase("RM3 is live")) {
 							statusOfRM3 = true;
 						} else {
 							statusOfRM3 = false;
 							if (info.getIsLeader()) {
 								// start T4
-								checkStatusOf = "RM3";
-								t4.start();
+  								t4.start();
 							}
 						}
-					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-					if (serverSocket != null) {
 						serverSocket.close();
 					}
-				}
 			}
 		}).start();
 
@@ -176,17 +218,19 @@ public class RMFailDetectUDPThread extends Thread {
 							serverSocket.receive(request);
 							System.out.println(new String(request.getData()));
 							message = new String(request.getData());
-							if (message.equals("RM3")) {
+							if (message.trim().equalsIgnoreCase("RM3")) {
 								if (statusOfRM3) {
+									System.out.println("in thread 5");
 									replyMessage = "RM3 is live";
 								} else {
+									System.out.println("in thread 5");
 									replyMessage = "RM3 is failed";
 								}
 							} else {
 								if (statusOfRM1) {
-									replyMessage = "RM1 is live";
+									replyMessage = "RM1 is live - T5";
 								} else {
-									replyMessage = "RM1 is failed";
+									replyMessage = "RM1 is failed - T5";
 								}
 							}
 							buffer = replyMessage.getBytes();
