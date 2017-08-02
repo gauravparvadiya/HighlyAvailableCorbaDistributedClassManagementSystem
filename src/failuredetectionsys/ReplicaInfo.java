@@ -1,7 +1,7 @@
 /**
  * 
  */
-package replica.info;
+package failuredetectionsys;
 
 /**
  * @author gauravparvadiya

@@ -6,7 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-import replica.info.ReplicaInfo;
+import failuredetectionsys.ReplicaInfo;
+import frontend.services.ReplicaLeaderManager;
 
 public class RMFailDetectUDPThread extends Thread {
 	private static DatagramSocket serverSocket;
@@ -29,6 +30,11 @@ public class RMFailDetectUDPThread extends Thread {
 
 		RMFailDetectUDPThread rm3 = new RMFailDetectUDPThread();
 
+		ReplicaLeaderManager rl = new ReplicaLeaderManager();
+		if (rl.getWhoIsLeader().equals("RM3")) {
+			info.setIsLeader(true);
+		}
+		
 		Thread t4 = new Thread(new Runnable() {
 			Boolean status = true;
 
@@ -53,6 +59,7 @@ public class RMFailDetectUDPThread extends Thread {
 								statusOfRM1 = true;
 							} else {
 								// Restart RM2
+								replica2.servers.RMFailDetectUDPThread.main(null);
 								System.out.println("Restart RM2");
 							}
 							socket.close();
@@ -75,6 +82,7 @@ public class RMFailDetectUDPThread extends Thread {
 								System.out.println("here 2");
 							} else {
 								// Restart RM2
+								replica1.servers.RMFailDetectUDPThread.main(null);
 								System.out.println("here 3");
 								System.out.println("Restart RM1");
 							}
