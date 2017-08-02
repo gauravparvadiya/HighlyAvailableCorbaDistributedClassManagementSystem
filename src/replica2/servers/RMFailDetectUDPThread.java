@@ -7,7 +7,9 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 import failuredetectionsys.ReplicaInfo;
+import frontend.services.RecordManagerFEImpl;
 import frontend.services.ReplicaLeaderManager;
+import replica1.services.ReplicaMgrService;
 
 public class RMFailDetectUDPThread extends Thread {
 	private static DatagramSocket serverSocket;
@@ -69,6 +71,19 @@ public class RMFailDetectUDPThread extends Thread {
 								if (rl.getWhoIsLeader().equals("RM1")) {
 									info.setIsLeader(true);
 									rl.setWhoIsLeader("RM2");
+									
+									ReplicaMgrService rm1 = new ReplicaMgrService();
+									rm1.setIsLeader("leaderstatus_false");
+									replica2.services.ReplicaMgrService rm2 = new replica2.services.ReplicaMgrService();
+									rm2.setIsLeader("leaderstatus_true");
+									replica3.services.ReplicaMgrService rm3 = new replica3.services.ReplicaMgrService();
+									rm3.setIsLeader("leaderstatus_false");
+									
+									RecordManagerFEImpl rmanager = new RecordManagerFEImpl();
+									rmanager.setLeadServerDetails("leaderdetails_localhost_6491");
+									
+									
+									
 								}
 								replica1.servers.RMFailDetectUDPThread.main(null);
 								System.out.println("Restart RM1");
