@@ -58,7 +58,7 @@ public class FIFOBroadcastSys {
 
 	/**
 	 * Fetches the value of secondary server details
-	 * 
+	 * host and port
 	 * @return secodary servers detail
 	 */
 	public String[] getSecServerDetails() {
