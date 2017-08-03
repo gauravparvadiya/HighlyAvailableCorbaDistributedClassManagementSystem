@@ -50,7 +50,7 @@ public class FIFOBroadcastSys {
 	 * @param secServerDetails
 	 *            secondary server details
 	 */
-	public void setSecServerDetails(List<String[]> secServerDetails) {
+	public void setSecServerDetails(List<String> secServerDetails) {
 		String[] secDetails1 = secServerDetails.get(0).toString().trim().split("_");
 		String[] secDetails2 = secServerDetails.get(1).toString().trim().split("_");
 		synchronized (this) {
