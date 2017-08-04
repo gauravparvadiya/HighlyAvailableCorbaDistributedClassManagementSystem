@@ -63,13 +63,10 @@ public class RMFailDetectUDPThread extends Thread {
 
 		FIFOBroadcastSys sys = new FIFOBroadcastSys();
 		sys.setSecServerDetails(secDetails);
-
-		ReplicaMgrService rm111 = new ReplicaMgrService();
-		rm111.setIsLeader("leaderstatus_true");
-		replica2.services.ReplicaMgrService rm2 = new replica2.services.ReplicaMgrService();
-		rm2.setIsLeader("leaderstatus_false");
-		replica3.services.ReplicaMgrService rm3 = new replica3.services.ReplicaMgrService();
-		rm3.setIsLeader("leaderstatus_false");
+		
+		ReplicaMgrService.setIsLeader("leaderstatus_true");
+		replica2.services.ReplicaMgrService.setIsLeader("leaderstatus_false");
+		replica3.services.ReplicaMgrService.setIsLeader("leaderstatus_false");
 
 		t4 = new Thread(new Runnable() {
 			Boolean status = true;
