@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.List;
 
 import failuredetectionsys.ReplicaInfo;
@@ -49,9 +50,15 @@ public class RMFailDetectUDPThread extends Thread {
 			info.setIsLeader(true);
 		}
 		
-		List<String> secDetails = null;
-		secDetails.add("localhost_6790");
-		secDetails.add("localhost_6494");
+		List<String[]> secDetails = new ArrayList<String[]>();
+		String[] svr1 = new String[2];
+		svr1[0] = "localhost";
+		svr1[1] = "6790";
+		String[] svr2 = new String[2];
+		svr2[0] = "localhost";
+		svr2[1] = "6794";
+		secDetails.add(svr1);
+		secDetails.add(svr2);
 		
 		FIFOBroadcastSys sys = new FIFOBroadcastSys();
 		sys.setSecServerDetails(secDetails);
