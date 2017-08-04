@@ -1,19 +1,23 @@
 package replica3.servers;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.ArrayList;
+
 import replica3.entities.Record;
 import replica3.entities.Request;
 import replica3.services.RecordManagerImpl;
 
 /**
  * Center Server thread class for UDP/IP communication between Center Servers and with Replica Manager.
- * @author Jyotsana Gupta
+ * @author Hirangi Naik
  */
 public class CenterServerUDPThread extends Thread
 {
@@ -76,7 +80,26 @@ public class CenterServerUDPThread extends Thread
 	 */
 	private void sendRecordCount(DatagramPacket requestPacket)
 	{
-		//TODO replica 3 code for getting record count
+		int recCount = -1;
+		recCount = recMgr.getOwnRecordCount();
+		
+		try
+		{
+			ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+			DataOutputStream dataOutput = new DataOutputStream(byteOutput);
+			dataOutput.writeInt(recCount);
+			byte[] replyMsg = byteOutput.toByteArray();
+			dataOutput.close();
+			byteOutput.close();
+			
+			DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length, requestPacket.getAddress(), 
+															requestPacket.getPort());
+			serverSocket.send(replyPacket);
+		}
+		catch (IOException ioe)
+		{
+			System.out.println("Exception occurred while sending record count from UDP/IP server: " + ioe.getMessage());
+		}
 	}
 	
 	/**
@@ -169,7 +192,27 @@ public class CenterServerUDPThread extends Thread
 	 */
 	private void addReceivedRecord(Record targetRec, DatagramPacket requestPacket)
 	{
-		//TODO replica 3 code for adding record to this server for transfer record operation
+		String addStatus = null;
+		
+		//Adding the received record to this center server's database
+		boolean recAdded = recMgr.addRecord(targetRec);
+		if (recAdded)
+			addStatus = "Record addition successful";
+		else
+			addStatus = "Failed to add record";
+		
+		//Sending addition operation status as reply to client
+		byte[] replyMsg = addStatus.getBytes();
+		DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length, 
+														requestPacket.getAddress(), requestPacket.getPort());
+		try
+		{
+			serverSocket.send(replyPacket);
+		}
+		catch(IOException ioe)
+		{
+			System.out.println("Exception occurred while receiving record at UDP/IP server: " + ioe.getMessage());
+		}
 	}
 	
 	/**
