@@ -5,9 +5,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.List;
 
 import failuredetectionsys.ReplicaInfo;
 import frontend.services.ReplicaLeaderManager;
+import replica1.services.FIFOBroadcastSys;
 
 public class RMFailDetectUDPThread extends Thread {
 	private static DatagramSocket serverSocket;
@@ -16,6 +18,11 @@ public class RMFailDetectUDPThread extends Thread {
 	private static Boolean statusOfRM2;
 	private static Boolean statusOfRM1;
 	private static String checkStatusOf;
+	private static Thread t1;
+	private static Thread t2;
+	private static Thread t3;
+	private static Thread t4;
+	private static Thread t5;
 
 	public RMFailDetectUDPThread() throws SocketException {
 		serverSocket = null;
@@ -26,14 +33,28 @@ public class RMFailDetectUDPThread extends Thread {
 		checkStatusOf = "";
 	}
 
-	public static void main(String[] args) throws SocketException {
-
-		RMFailDetectUDPThread rm3 = new RMFailDetectUDPThread();
+	@SuppressWarnings("deprecation")
+	public void stopChildThread() {
+		t1.stop();
+		t2.stop();
+		t3.stop();
+		t4.stop();
+		t5.stop();
+	}
+	
+	public void run() {
 
 		ReplicaLeaderManager rl = new ReplicaLeaderManager();
 		if (rl.getWhoIsLeader().equals("RM3")) {
 			info.setIsLeader(true);
 		}
+		
+		List<String> secDetails = null;
+		secDetails.add("localhost_6790");
+		secDetails.add("localhost_6494");
+		
+		FIFOBroadcastSys sys = new FIFOBroadcastSys();
+		sys.setSecServerDetails(secDetails);
 		
 		Thread t4 = new Thread(new Runnable() {
 			Boolean status = true;
@@ -58,8 +79,8 @@ public class RMFailDetectUDPThread extends Thread {
 							if (new String(reply.getData()).trim().equalsIgnoreCase("RM2 is live")) {
 								statusOfRM1 = true;
 							} else {
-								// Restart RM2
-								replica2.servers.RMFailDetectUDPThread.main(null);
+								replica2.servers.RMFailDetectUDPThread rm2 = new replica2.servers.RMFailDetectUDPThread();
+								rm2.start();
 								System.out.println("Restart RM2");
 							}
 							socket.close();
@@ -81,8 +102,8 @@ public class RMFailDetectUDPThread extends Thread {
 								statusOfRM1 = true;
 								System.out.println("here 2");
 							} else {
-								// Restart RM2
-								replica1.servers.RMFailDetectUDPThread.main(null);
+								replica1.servers.RMFailDetectUDPThread rm1 = new replica1.servers.RMFailDetectUDPThread();
+								rm1.start();
 								System.out.println("here 3");
 								System.out.println("Restart RM1");
 							}
@@ -99,7 +120,7 @@ public class RMFailDetectUDPThread extends Thread {
 		});
 
 		// Thread to send RM1 status to RM2 and RM3 at every 10ms.
-		new Thread(new Runnable() {
+		t1 = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				// DatagramSocket serverSocket = null;
@@ -128,10 +149,11 @@ public class RMFailDetectUDPThread extends Thread {
 					}
 				}
 			}
-		}).start();
+		});
+		t1.start();
 
 		// Thread to get status of RM2.
-		new Thread(new Runnable() {
+		t2 = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				DatagramSocket serverSocket = null;
@@ -170,10 +192,11 @@ public class RMFailDetectUDPThread extends Thread {
 				}
 
 			}
-		}).start();
+		});
+		t2.start();
 
 		// Thread to get status of RM1.
-		new Thread(new Runnable() {
+		t3 = new Thread(new Runnable() {
 			@Override
 			public void run() {
 
@@ -210,10 +233,11 @@ public class RMFailDetectUDPThread extends Thread {
 				}
 
 			}
-		}).start();
+		});
+		t3.start();
 
 		if (!info.getIsLeader()) {
-			new Thread(new Runnable() {
+			t5 = new Thread(new Runnable() {
 
 				@Override
 				public void run() {
@@ -260,7 +284,8 @@ public class RMFailDetectUDPThread extends Thread {
 						serverSocket.close();
 					}
 				}
-			}).start();
+			});
+			t5.start();
 		}
 	}
 }

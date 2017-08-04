@@ -21,11 +21,17 @@ public class ReplicaMgrUDPServer
 	private static ReplicaMgrService rmService = new ReplicaMgrService();
 	private static DatagramSocket serverSocket = null;
 	
-	public static void main(String[] args) throws SocketException
+	public static void main(String[] args)
 	{		
 		//Launching a parallel thread for communicating with failure detection system
-		RMFailDetectUDPThread rmFDUDPThread = new RMFailDetectUDPThread();
-		rmFDUDPThread.start();
+		RMFailDetectUDPThread rmFDUDPThread;
+		try {
+			rmFDUDPThread = new RMFailDetectUDPThread();
+			rmFDUDPThread.start();
+		} catch (SocketException e) {
+			e.printStackTrace();
+		} 
+		
 		
 		//Performing major request processing tasks
 		try

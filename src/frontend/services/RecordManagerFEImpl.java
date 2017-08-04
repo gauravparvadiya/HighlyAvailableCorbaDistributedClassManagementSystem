@@ -1,10 +1,12 @@
 package frontend.services;
 
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import frontend.corbasupport.RecordManagerApp.RecordManagerPOA;
 import frontend.entities.Request;
 import frontend.servers.FEUDPServerThread;
+import replica1.servers.RMFailDetectUDPThread;
 
 /**
  * Front end remote interface implementation defining methods for initiating student-teacher record management.
@@ -36,6 +38,11 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	/**
 	 * Default (unparameterized) constructor.
 	 */
+	
+	RMFailDetectUDPThread rm1;
+	replica2.servers.RMFailDetectUDPThread rm2;
+	replica3.servers.RMFailDetectUDPThread rm3;
+	
 	public RecordManagerFEImpl() 
 	{
 		leadServerHostname = null;
@@ -201,7 +208,19 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	{
 		//TODO leader process crash simulation to be implemented here
 		//If UDP server is required, the same host and port used by FIFO should be used
-
+		//RMFailDetectUDPThread t1 = new RMFailDetectUDPThread();
+		try {
+			rm1 = new RMFailDetectUDPThread();
+			rm1.stopChildThread();
+			rm1.stop();
+		} catch (SocketException e) {
+			e.printStackTrace();
+		} catch (ThreadDeath e) {
+			e.printStackTrace();
+			System.out.println("RM1 stopped");
+			return "success";
+		}
+		
 		return null;
 	}
 
@@ -210,9 +229,25 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	 */
 	public String crashSecondaryServer() 
 	{
-		//TODO secondary process crash simulation to be implemented here
-		//If UDP server is required, the same host and port used by FIFO should be used
-
+		
+		try {
+			rm2 = new replica2.servers.RMFailDetectUDPThread();
+			rm2.stopChildThread();
+		} catch (SocketException e) {
+			e.printStackTrace();
+		} catch (ThreadDeath e) {
+			System.out.println("Rm2 stopped");
+		}
+		
+		try {
+			rm3 = new replica3.servers.RMFailDetectUDPThread();
+			rm3.stopChildThread();
+		} catch (SocketException e) {
+			e.printStackTrace();
+		} catch (ThreadDeath e) {
+			System.out.println("Rm3 stopped");
+		}
+		
 		return null;
 	}
 
