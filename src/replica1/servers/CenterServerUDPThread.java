@@ -9,13 +9,7 @@ import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-<<<<<<< Updated upstream
-import java.util.ArrayList;
-import java.util.List;
-
-=======
 import frontend.entities.Request;
->>>>>>> Stashed changes
 import replica1.entities.Record;
 import replica1.services.RecordManagerImpl;
 
