@@ -2,7 +2,8 @@ package replica1.services;
 
 import java.util.ArrayList;
 import java.util.List;
-import replica1.entities.Request;
+
+import frontend.entities.Request;
 import replica1.servers.CenterServerUDPThread;
 
 /**
@@ -83,6 +84,9 @@ public class ReplicaMgrService
 	 */
 	private boolean getIsLeader()
 	{
+		//TODO remove later 
+		isLeader = true;
+		
 		synchronized (leadStatLock)
 		{
 			return isLeader;

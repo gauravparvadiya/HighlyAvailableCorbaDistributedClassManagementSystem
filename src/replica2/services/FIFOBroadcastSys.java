@@ -1,79 +1,172 @@
 package replica2.services;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
-import replica2.entities.Request;
+import frontend.entities.Request;
 
 /**
- * FIFO broadcast defining methods to broadcast request, get and set secondary server details.
+ * Class for broadcasting requests from lead server to secondary servers.
  * @author Hirangi Naik
+ * @author Jyotsana Gupta
  */
-
-public class FIFOBroadcastSys {
-
-	private String[] hostname;
-
-	private int[] portno;
+public class FIFOBroadcastSys 
+{
+	/**
+	 * Stores hostnames and port numbers of secondary servers.
+	 */
+	private List<String[]> secServerDetails = new ArrayList<String[]>();
+	
+	/**
+	 * Object used as a lock for secondary server details access and update.
+	 */
+	private final Object secServDtlsLock = new Object();
+	
+	/**
+	 * Sets the hostnames and port numbers for the secondary servers.
+	 * @param	secServerDetails	Details of secondary servers
+	 */
+	public void setSecServerDetails(List<String[]> secServerDetails)
+	{		
+		synchronized (secServDtlsLock) 
+		{
+			this.secServerDetails = secServerDetails;
+		}
+	}
+	
+	/**
+	 * Fetches the hostnames and port numbers of the secondary servers.
+	 * @return	Details of secondary servers
+	 */
+	public List<String[]> getSecServerDetails()
+	{
+		//TODO remove later
+		List<String[]> dummyDetails = new ArrayList<String[]>();
+		String[] dummy1 = {"localhost", "6790"};
+		String[] dummy2 = {"localhost", "6798"};
+		dummyDetails.add(dummy1);
+		dummyDetails.add(dummy2);
+		secServerDetails = dummyDetails;	
+		
+		synchronized (secServDtlsLock) 
+		{			
+			return secServerDetails;
+		}
+	}
 
 	/**
 	 * To broadcast the request to secondary servers
 	 * @param newRequest
 	 */
-	public void broadcastRequest(Request newRequest) {
-		String[] secServerDetail=getSecServerDetails();
-		try {
-			DatagramSocket socket = new DatagramSocket();
-			byte[] message = newRequest.toString().getBytes();
-			InetAddress host = InetAddress.getByName(secServerDetail[0]);
-			DatagramPacket request = new DatagramPacket(message, message.length, host, Integer.parseInt(secServerDetail[1]));
-			socket.send(request);
-			socket.close();
-			
-			DatagramSocket socket2 = new DatagramSocket();
-			byte[] message2 = newRequest.toString().getBytes();
-			InetAddress host2 = InetAddress.getByName(secServerDetail[2]);
-			DatagramPacket request2 = new DatagramPacket(message2, message2.length, host2, Integer.parseInt(secServerDetail[3]));
-			socket2.send(request2);
-			socket2.close();
-			
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
+	public void broadcastRequest(Request newRequest) 
+	{
+		//Sending request to secondary server 1 and receiving its response
+		String[] secServer1 = getSecServerDetails().get(0);
+		String secServHost1 = secServer1[0];
+		int secServPort1 = Integer.parseInt(secServer1[1]);		
+		RequestCommunicator secServCommrThread1 = new RequestCommunicator(newRequest, secServHost1, secServPort1);
+		secServCommrThread1.start();
+		
+		//Sending request to secondary server 2 and receiving its response
+		String[] secServer2 = getSecServerDetails().get(1);
+		String secServHost2 = secServer2[0];
+		int secServPort2 = Integer.parseInt(secServer2[1]);	
+		RequestCommunicator secServCommrThread2 = new RequestCommunicator(newRequest, secServHost2, secServPort2);
+		secServCommrThread2.start();
+		
+		//Waiting for the request broadcasting threads to finish their execution
+		try
+		{
+			secServCommrThread1.join();
+			secServCommrThread2.join();
+		}
+		catch(InterruptedException ie)
+		{
+			System.out.println("Exception occurred during UDP interaction between FIFO broadcast system and secondary server: " + ie.getMessage());
 		}
 	}
+}
 
+/**
+ * Thread class for sending request to and receiving response from secondary servers.
+ * @author Jyotsana Gupta
+ */
+class RequestCommunicator extends Thread
+{
+	private Request newRequest;
+	private String secServHostname;
+	private int secServPort;
+	
 	/**
-	 * Set secondary sever details
-	 * 
-	 * @param secServerDetails
-	 *            secondary server details
+	 * Parameterized constructor with all attributes provided as arguments.
+	 * @param 	newRequest			Request to be communicated
+	 * @param 	secServHostname		Hostname of the secondary server to be contacted
+	 * @param 	secServPort			Port number of the secondary server to be contacted
 	 */
-	public void setSecServerDetails(List<String> secServerDetails) {
-		String[] secDetails1 = secServerDetails.get(0).toString().trim().split("_");
-		String[] secDetails2 = secServerDetails.get(1).toString().trim().split("_");
-		synchronized (this) {
-			this.hostname[0] = secDetails1[1].trim();
-			this.portno[0] = Integer.parseInt(secDetails1[2].trim());
-			this.hostname[1] = secDetails2[1].trim();
-			this.portno[1] = Integer.parseInt(secDetails2[2].trim());
-		}
+	public RequestCommunicator(Request newRequest, String secServHostname, int secServPort)
+	{
+		this.newRequest = newRequest;
+		this.secServHostname = secServHostname;
+		this.secServPort = secServPort;
 	}
-
+	
 	/**
-	 * Fetches the value of secondary server details
-	 * 
-	 * @return secodary servers detail
+	 * Sends request to and receives response from the secondary server.
 	 */
-	public String[] getSecServerDetails() {
-		String[] secDetails = new String[4];
-		synchronized (this) {
-			secDetails[0] = hostname[0];
-			secDetails[1] = portno[0] + "";
-			secDetails[2] = hostname[1];
-			secDetails[3] = portno[1] + "";
+	public void run()
+	{
+		DatagramSocket broadcastSocket = null;
+		try
+		{
+			broadcastSocket = new DatagramSocket();
+			broadcastSocket.setSoTimeout(100);
+			InetAddress secServAddr = InetAddress.getByName(secServHostname);
+			
+			//Sending request to secondary server for processing
+			ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+			ObjectOutputStream objOutput = new ObjectOutputStream(byteOutput);
+			objOutput.writeObject(newRequest);
+			byte[] objReqMsg = byteOutput.toByteArray();
+			objOutput.close();
+			byteOutput.close();
+			
+			DatagramPacket requestPacket = new DatagramPacket(objReqMsg, objReqMsg.length, secServAddr, secServPort);
+			broadcastSocket.send(requestPacket);
+			
+			//Waiting to receive response from secondary server
+			byte[] replyMsg = new byte[1000];
+			DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length);
+			broadcastSocket.receive(replyPacket);
 		}
-		return secDetails;
+		catch(SocketException se)
+		{
+			System.out.println("Exception occurred during UDP interaction between FIFO broadcast system and secondary server: " + se.getMessage());
+		}
+		catch(UnknownHostException uhe)
+		{
+			System.out.println("Exception occurred during UDP interaction between FIFO broadcast system and secondary server: " + uhe.getMessage());
+		}
+		catch(SocketTimeoutException ste)
+		{
+			System.out.println("Processing timeout exceeded for secondary server.");
+		}
+		catch(IOException ioe)
+		{
+			System.out.println("Exception occurred during UDP interaction between FIFO broadcast system and secondary server: " + ioe.getMessage());
+		}
+		finally
+		{
+			if (broadcastSocket != null)
+				broadcastSocket.close();
+		}
 	}
 }

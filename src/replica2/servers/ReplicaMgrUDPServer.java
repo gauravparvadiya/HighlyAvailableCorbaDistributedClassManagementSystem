@@ -7,7 +7,8 @@ import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import replica2.entities.Request;
+
+import frontend.entities.Request;
 import replica2.services.ReplicaMgrService;
 
 /**
@@ -23,6 +24,8 @@ public class ReplicaMgrUDPServer
 	
 	public static void main(String[] args) throws SocketException
 	{		
+		System.out.println("Manager UDP Server for Replica2 has been started.");
+		
 		//Launching a parallel thread for communicating with failure detection system
 		RMFailDetectUDPThread rmFDUDPThread = new RMFailDetectUDPThread();
 		rmFDUDPThread.start();

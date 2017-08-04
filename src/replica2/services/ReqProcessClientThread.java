@@ -9,7 +9,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import replica2.entities.Request;
+import frontend.entities.Request;
 
 /**
  * Client thread class for sending a Request for processing to a Center Server through UDP/IP communication.

@@ -9,8 +9,9 @@ import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+
+import frontend.entities.Request;
 import replica2.entities.Record;
-import replica2.entities.Request;
 import replica2.services.RecordManagerImpl;
 
 /**
@@ -190,7 +191,6 @@ public class CenterServerUDPThread extends Thread
 	 */
 	private void addReceivedRecord(Record targetRec, DatagramPacket requestPacket)
 	{
-		//TODO changes
 		String addStatus = null;
 		
 		//Adding the received record to this center server's database
@@ -221,7 +221,6 @@ public class CenterServerUDPThread extends Thread
 	 */
 	private void invokeCenterServer(Request newRequest, DatagramPacket requestPacket)
 	{
-		//TODO changes
 		String opStatus = null;
 		String methodName = newRequest.getMethodName();
 		

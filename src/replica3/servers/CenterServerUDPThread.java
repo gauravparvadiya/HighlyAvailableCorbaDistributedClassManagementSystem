@@ -12,7 +12,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 
 import replica3.entities.Record;
-import replica3.entities.Request;
+import frontend.entities.Request;
 import replica3.services.RecordManagerImpl;
 
 /**

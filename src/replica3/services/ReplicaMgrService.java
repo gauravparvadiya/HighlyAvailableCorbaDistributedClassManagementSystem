@@ -5,7 +5,7 @@ import replica3.services.RecordManagerImpl;
 import java.util.ArrayList;
 import java.util.List;
 import replica3.services.ReqProcessClientThread;
-import replica3.entities.Request;
+import frontend.entities.Request;
 
 /**
  * Replica manager service class for parsing, processing and initiating broadcasting of requests.
@@ -118,7 +118,7 @@ public class ReplicaMgrService
 		//Handle Center Server crash and re-process request
 		if (processStatus.trim().toLowerCase().indexOf("timeout") >= 0)
 		{
-			System.out.println("Center Server processing timeout exceeded, indicating a crash.");
+			System.out.println("Center Server processing timeout exceeded at replica3, indicating a crash.");
 			processStatus = handleServerCrash(centerID, remServHostname, remServPort, newRequest);
 		}
 		
@@ -191,7 +191,7 @@ public class ReplicaMgrService
 			udpServThread = ddoUdpServThread;
 		}
 						
-		System.out.println("Stopping the crashed Center Server if it is still running...");
+		System.out.println("Stopping the crashed Center Server at replica3 if it is still running...");
 		try
 		{
 			if (udpServThread.isAlive())
@@ -202,11 +202,11 @@ public class ReplicaMgrService
 			System.out.println(centerID + " Center Server has been stopped.");
 		}
 		
-		System.out.println("Restarting the crashed Center Server");
+		System.out.println("Restarting the crashed Center Server at replica3");
 		CenterServerUDPThread newUdpServThread = new CenterServerUDPThread(remServPort, recMgr);
 		newUdpServThread.start();
 			
-		System.out.println("Resending the request to the Center Server for processing");
+		System.out.println("Resending the request to the Center Server at replica3 for processing");
 		return executeOperation(newRequest, remServHostname, remServPort);
 	}
 	

@@ -2,10 +2,11 @@ package replica2.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import frontend.entities.Request;
 import replica2.servers.CenterServerUDPThread;
 import replica2.services.RecordManagerImpl;
 import replica2.services.ReqProcessClientThread;
-import replica2.entities.Request;
+
 
 /**
  * Replica manager service class for parsing, processing and initiating broadcasting of requests.
