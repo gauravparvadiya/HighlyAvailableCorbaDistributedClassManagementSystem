@@ -17,12 +17,12 @@ public class ReplicaMgrService
 	/**
 	 * Indicates whether this is a leader or a secondary replica manager.
 	 */
-	private boolean isLeader;
+	private static boolean isLeader = false;
 	
 	/**
 	 * Object used as a lock for lead status access and update.
 	 */
-	private final Object leadStatLock = new Object();
+	private static final Object leadStatLock = new Object();
 	
 	//Center Server instances
 	private RecordManagerImpl mtlRecMgr;
@@ -44,8 +44,6 @@ public class ReplicaMgrService
 	 */
 	public ReplicaMgrService()
 	{
-		isLeader = false;
-		
 		//Creating instances of all Center Servers
 		mtlRecMgr = new RecordManagerImpl("mtl");
 		lvlRecMgr = new RecordManagerImpl("lvl");
@@ -67,16 +65,16 @@ public class ReplicaMgrService
 	 * Sets the value of lead/secondary status for this replica.
 	 * @param	rmStatusStr	Lead/secondary status
 	 */
-	public void setIsLeader(String rmStatusStr)
+	public static void setIsLeader(String rmStatusStr)
 	{
 		String[] rmStatus = rmStatusStr.trim().split("_");
 		
 		synchronized (leadStatLock) 
 		{
 			if (rmStatus[1].trim().equalsIgnoreCase("true"))
-				this.isLeader = true;
+				isLeader = true;
 			else
-				this.isLeader = false;
+				isLeader = false;
 		}
 	}
 	
@@ -84,7 +82,7 @@ public class ReplicaMgrService
 	 * Fetches the value of lead/secondary status of this replica.
 	 * @return	Current status of this replica
 	 */
-	private boolean getIsLeader()
+	private static boolean getIsLeader()
 	{
 		synchronized (leadStatLock)
 		{

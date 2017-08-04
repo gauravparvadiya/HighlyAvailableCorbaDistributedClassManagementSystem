@@ -49,13 +49,15 @@ public class FIFOBroadcastSys
 	public List<String[]> getSecServerDetails()
 	{
 		//TODO remove later
+		/*
 		List<String[]> dummyDetails = new ArrayList<String[]>();
 		String[] dummy1 = {"localhost", "6790"};
 		String[] dummy2 = {"localhost", "6794"};
 		dummyDetails.add(dummy1);
 		dummyDetails.add(dummy2);
 		secServerDetails = dummyDetails;	
-				
+				*/
+		
 		synchronized (secServDtlsLock) 
 		{			
 			return secServerDetails;

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * Parent class for different record types, such as TeacherRecord, StudentRecord, etc.
- * @author Hirangi Naik
+ * @author Jyotsana Gupta
  */
 public class Record implements Serializable
 {

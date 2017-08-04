@@ -49,8 +49,8 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 		leadServerPort = -1;
 		
 		//TODO remove later
-		leadServerHostname = "localhost";
-		leadServerPort = 6790;
+		//leadServerHostname = "localhost";
+		//leadServerPort = 6790;
 
 		//Launching FIFO ordering system
 		fifoOrdSys = new FIFOOrderSys();
