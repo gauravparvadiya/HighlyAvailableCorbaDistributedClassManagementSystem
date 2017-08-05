@@ -26,8 +26,10 @@ public class RMFailDetectUDPThread extends Thread {
 	private static Thread t3;
 	private static Thread t4;
 	private static Thread t5;
+	FIFOBroadcastSys sys = null;
 
-	public RMFailDetectUDPThread() throws SocketException {
+	public RMFailDetectUDPThread(FIFOBroadcastSys sys) throws SocketException {
+		this.sys = sys;
 		serverSocket = null;
 		serverPort = 6491;
 		info = new ReplicaInfo(serverPort, "localhost", false);
@@ -64,7 +66,7 @@ public class RMFailDetectUDPThread extends Thread {
 			secDetails.add(svr2);
 			
 			
-			FIFOBroadcastSys sys = new FIFOBroadcastSys();
+			//FIFOBroadcastSys sys = new FIFOBroadcastSys();
 			sys.setSecServerDetails(secDetails);
 			
 			t4 = new Thread(new Runnable() {
@@ -113,9 +115,9 @@ public class RMFailDetectUDPThread extends Thread {
 										}
 										
 									}
-									replica1.servers.RMFailDetectUDPThread rm1 = new replica1.servers.RMFailDetectUDPThread();
+									//replica1.servers.RMFailDetectUDPThread rm1 = new replica1.servers.RMFailDetectUDPThread();
 									//rm1.stop();
-									rm1.start();
+									//rm1.start();
 									//replica1.servers.RMFailDetectUDPThread.main(null);
 									System.out.println("Restart RM1");
 								}

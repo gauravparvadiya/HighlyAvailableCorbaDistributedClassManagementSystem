@@ -25,10 +25,13 @@ public class RMFailDetectUDPThread extends Thread {
 	private static Thread t3;
 	private static Thread t4;
 	private static Thread t5;
-	
+	FIFOBroadcastSys sys = null;
 
-	public RMFailDetectUDPThread() throws SocketException {
+
+	
+	public RMFailDetectUDPThread(FIFOBroadcastSys sys) throws SocketException {
 		// serverSocket = null;
+		this.sys = sys;
 		serverPort = 6490;
 		info = new ReplicaInfo(serverPort, "localhost", true);
 		statusOfRM2 = true;
@@ -80,7 +83,7 @@ public class RMFailDetectUDPThread extends Thread {
 		secDetails.add(svr1);
 		secDetails.add(svr2);
 
-		FIFOBroadcastSys sys = new FIFOBroadcastSys();
+		//sys = new FIFOBroadcastSys();
 		sys.setSecServerDetails(secDetails);
 		
 		ReplicaMgrService.setIsLeader("leaderstatus_true");
@@ -110,8 +113,8 @@ public class RMFailDetectUDPThread extends Thread {
 							if (new String(reply.getData()).trim().equalsIgnoreCase("RM2 is live")) {
 								statusOfRM2 = true;
 							} else {
-								replica2.servers.RMFailDetectUDPThread rm2 = new replica2.servers.RMFailDetectUDPThread();
-								rm2.start();
+//								replica2.servers.RMFailDetectUDPThread rm2 = new replica2.servers.RMFailDetectUDPThread();
+//								rm2.start();
 								System.out.println("Restart RM2");
 							}
 							socket.close();
