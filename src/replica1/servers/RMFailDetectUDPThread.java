@@ -47,12 +47,14 @@ public class RMFailDetectUDPThread extends Thread {
 
 	public void run() {
 
-		ReplicaLeaderManager rl = new ReplicaLeaderManager();
-		if (rl.getWhoIsLeader().equals("RM1")) {
+		//ReplicaLeaderManager rl = new ReplicaLeaderManager();
+		if (ReplicaLeaderManager.getWhoIsLeader().equals("RM1")) {
 			info.setIsLeader(true);
+			RecordManagerFEImpl.setLeadServerDetails("leaderdetails_localhost_6790");
+			System.out.println("Leader detail set in RM1");
 		}
 
-		RecordManagerFEImpl.setLeadServerDetails("leaderdetails_localhost_6790");
+		
 		
 		List<String[]> secDetails = new ArrayList<String[]>();
 		String[] svr1 = new String[2];

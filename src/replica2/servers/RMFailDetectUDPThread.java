@@ -48,8 +48,8 @@ public class RMFailDetectUDPThread extends Thread {
 		 
 		// RMFailDetectUDPThread rm2 = new RMFailDetectUDPThread();
 			
-			ReplicaLeaderManager rl = new ReplicaLeaderManager();
-			if (rl.getWhoIsLeader().equals("RM2")) {
+			//ReplicaLeaderManager rl = new ReplicaLeaderManager();
+			if (ReplicaLeaderManager.getWhoIsLeader().equals("RM2")) {
 				info.setIsLeader(true);
 			}
 			

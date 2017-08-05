@@ -4,11 +4,11 @@ public class ReplicaLeaderManager {
 
 	private static String whoIsLeader = "RM1"; 
 
-	public String getWhoIsLeader() {
+	public static String getWhoIsLeader() {
 		return whoIsLeader;
 	}
 
-	public void setWhoIsLeader(String whoIsLeader) {
+	public static void setWhoIsLeader(String whoIsLeader) {
 		ReplicaLeaderManager.whoIsLeader = whoIsLeader;
 	}
 	
