@@ -49,16 +49,6 @@ public class FIFOBroadcastSys
 	 */
 	public List<String[]> getSecServerDetails()
 	{
-		//TODO remove later
-		/*
-		List<String[]> dummyDetails = new ArrayList<String[]>();
-		String[] dummy1 = {"localhost", "6790"};
-		String[] dummy2 = {"localhost", "6798"};
-		dummyDetails.add(dummy1);
-		dummyDetails.add(dummy2);
-		secServerDetails = dummyDetails;	
-		*/
-		
 		synchronized (secServDtlsLock) 
 		{			
 			return secServerDetails;
@@ -130,7 +120,7 @@ class RequestCommunicator extends Thread
 		try
 		{
 			broadcastSocket = new DatagramSocket();
-			broadcastSocket.setSoTimeout(100);
+			broadcastSocket.setSoTimeout(150);
 			InetAddress secServAddr = InetAddress.getByName(secServHostname);
 			
 			//Sending request to secondary server for processing

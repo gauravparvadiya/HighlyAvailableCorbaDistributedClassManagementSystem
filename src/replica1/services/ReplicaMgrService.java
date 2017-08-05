@@ -82,9 +82,6 @@ public class ReplicaMgrService
 	 */
 	private static boolean getIsLeader()
 	{
-		//TODO remove later 
-		//isLeader = true;
-		
 		synchronized (leadStatLock)
 		{
 			return isLeader;

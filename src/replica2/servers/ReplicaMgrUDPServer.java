@@ -54,7 +54,7 @@ public class ReplicaMgrUDPServer
 				//Processing request based on its type
 				String requestStr = new String(requestMsg);
 				if (requestStr.trim().indexOf("leaderstatus") == 0)
-					rmService.setIsLeader(requestStr);
+					ReplicaMgrService.setIsLeader(requestStr);
 				else
 					forwardToService(requestPacket);
 			}

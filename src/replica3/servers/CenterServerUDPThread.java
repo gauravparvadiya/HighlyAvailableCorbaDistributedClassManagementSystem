@@ -9,8 +9,6 @@ import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.util.ArrayList;
-
 import replica3.entities.Record;
 import frontend.entities.Request;
 import replica3.services.RecordManagerImpl;

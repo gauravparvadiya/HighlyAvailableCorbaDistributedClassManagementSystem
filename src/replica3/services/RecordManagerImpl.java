@@ -33,7 +33,7 @@ public class RecordManagerImpl
 	 */
 	private final Object recordIDCtrLock = new Object();
 	
-	private static final String LOG_FILE_PATH = "D:\\";
+	private static final String LOG_FILE_PATH = "D:\\Concordia\\Courses - Summer 2017\\COMP 6231 - DSD\\Project\\Logs\\Replica3\\CenterServer\\";
 	private String fileName;
 	
 	private String centerID;

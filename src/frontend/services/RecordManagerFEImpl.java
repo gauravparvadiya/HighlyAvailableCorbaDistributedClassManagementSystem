@@ -1,6 +1,5 @@
 package frontend.services;
 
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import frontend.corbasupport.RecordManagerApp.RecordManagerPOA;
@@ -45,10 +44,6 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	
 	public RecordManagerFEImpl() 
 	{		
-		//TODO remove later
-		//leadServerHostname = "localhost";
-		//leadServerPort = 6790;
-
 		//Launching FIFO ordering system
 		fifoOrdSys = new FIFOOrderSys();
 
@@ -69,10 +64,6 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 		{
 			leadServerHostname = leadDetails[1].trim();
 			leadServerPort = Integer.parseInt(leadDetails[2].trim());
-			
-			//TODO remove later
-			System.out.println("set leadServerHostname: " + leadServerHostname);
-			System.out.println("set leadServerPort: " + leadServerPort);
 		}
 	}
 
@@ -278,10 +269,6 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			String[] leadServerDetails = getLeadServerDetails();
 			String leadHostname = leadServerDetails[0];
 			int leadPort = Integer.parseInt(leadServerDetails[1]);
-			
-			//TODO remove later
-			System.out.println("in leadServerHostname: " + leadServerHostname);
-			System.out.println("in leadServerPort: " + leadServerPort);
 
 			//Invoking FIFO System to send first request in the queue to the lead server for processing
 			processStatus = fifoOrdSys.sendFirstRequest(leadHostname, leadPort);
@@ -306,10 +293,6 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			leadDetails[1] = leadServerPort + "";
 		}
 		
-		//TODO remove later
-		System.out.println("get leadServerHostname: " + leadServerHostname);
-		System.out.println("get leadServerPort: " + leadServerPort);
-
 		return leadDetails;
 	}
 }

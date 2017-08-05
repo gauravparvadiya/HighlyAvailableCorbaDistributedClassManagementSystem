@@ -68,7 +68,7 @@ public class ReqProcessClientThread extends Thread
 			DatagramPacket requestPacket = new DatagramPacket(objReqMsg, objReqMsg.length, serverAddr, serverPort);
 			clientSocket.send(requestPacket);
 			
-			clientSocket.setSoTimeout(1000);
+			clientSocket.setSoTimeout(100);
 			try
 			{
 				byte[] replyMsg = new byte[1000];
