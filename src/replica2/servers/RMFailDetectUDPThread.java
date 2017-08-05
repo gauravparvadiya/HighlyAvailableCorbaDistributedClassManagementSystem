@@ -91,17 +91,26 @@ public class RMFailDetectUDPThread extends Thread {
 									statusOfRM1 = true;
 								} else {
 									// Restart RM2
-									if (rl.getWhoIsLeader().equals("RM1")) {
+									if (ReplicaLeaderManager.getWhoIsLeader().equals("RM1")) {
 										info.setIsLeader(true);
-										rl.setWhoIsLeader("RM2");
+										ReplicaLeaderManager.setWhoIsLeader("RM2");
 										
 										ReplicaMgrService.setIsLeader("leaderstatus_false");
 										replica2.services.ReplicaMgrService.setIsLeader("leaderstatus_true");
 										replica3.services.ReplicaMgrService.setIsLeader("leaderstatus_false");
 										
-										RecordManagerFEImpl.setLeadServerDetails("leaderdetails_localhost_6794");
-										
-										
+										DatagramSocket socket1 = null;
+										try {
+											socket1 = new DatagramSocket();
+											byte[] message1 = "leaderdetails_localhost_6794".getBytes();
+											InetAddress host1 = InetAddress.getByName("localhost");
+											DatagramPacket request1 = new DatagramPacket(message1, message1.length, host1, 6789);
+											socket1.send(request1);
+											socket1.close();
+										} catch (Exception e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
 										
 									}
 									replica1.servers.RMFailDetectUDPThread rm1 = new replica1.servers.RMFailDetectUDPThread();

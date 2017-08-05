@@ -50,8 +50,22 @@ public class RMFailDetectUDPThread extends Thread {
 		//ReplicaLeaderManager rl = new ReplicaLeaderManager();
 		if (ReplicaLeaderManager.getWhoIsLeader().equals("RM1")) {
 			info.setIsLeader(true);
-			RecordManagerFEImpl.setLeadServerDetails("leaderdetails_localhost_6790");
+			//RecordManagerFEImpl.setLeadServerDetails("leaderdetails_localhost_6790");
 			System.out.println("Leader detail set in RM1");
+			
+			DatagramSocket socket = null;
+			try {
+				socket = new DatagramSocket();
+				byte[] message = "leaderdetails_localhost_6790".getBytes();
+				InetAddress host = InetAddress.getByName("localhost");
+				DatagramPacket request = new DatagramPacket(message, message.length, host, 6789);
+				socket.send(request);
+				socket.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 
 		
