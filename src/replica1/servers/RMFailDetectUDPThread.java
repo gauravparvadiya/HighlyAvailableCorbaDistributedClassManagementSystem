@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import failuredetectionsys.ReplicaInfo;
+import frontend.services.RecordManagerFEImpl;
 import frontend.services.ReplicaLeaderManager;
 import replica1.services.FIFOBroadcastSys;
 import replica1.services.ReplicaMgrService;
@@ -51,6 +52,9 @@ public class RMFailDetectUDPThread extends Thread {
 			info.setIsLeader(true);
 		}
 
+		RecordManagerFEImpl rmanager = new RecordManagerFEImpl();
+		rmanager.setLeadServerDetails("leaderdetails_localhost_6490");
+		
 		List<String[]> secDetails = new ArrayList<String[]>();
 		String[] svr1 = new String[2];
 		svr1[0] = "localhost";
@@ -123,7 +127,7 @@ public class RMFailDetectUDPThread extends Thread {
 						}
 					} catch (Exception e) {
 						// TODO: handle exception
-					}
+					} 
 
 					status = false;
 				}
