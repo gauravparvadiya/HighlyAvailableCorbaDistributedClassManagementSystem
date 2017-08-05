@@ -52,8 +52,7 @@ public class RMFailDetectUDPThread extends Thread {
 			info.setIsLeader(true);
 		}
 
-		RecordManagerFEImpl rmanager = new RecordManagerFEImpl();
-		rmanager.setLeadServerDetails("leaderdetails_localhost_6790");
+		RecordManagerFEImpl.setLeadServerDetails("leaderdetails_localhost_6790");
 		
 		List<String[]> secDetails = new ArrayList<String[]>();
 		String[] svr1 = new String[2];
