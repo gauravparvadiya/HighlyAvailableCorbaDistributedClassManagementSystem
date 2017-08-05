@@ -9,7 +9,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import frontend.entities.Request;
-import replica1.servers.RMFailDetectUDPThread;
+import replica2.servers.RMFailDetectUDPThread;
 import replica2.services.ReplicaMgrService;
 
 /**
