@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import replica3.services.ReqProcessClientThread;
 import frontend.entities.Request;
+import replica1.services.FIFOBroadcastSys;
 
 /**
  * Replica manager service class for parsing, processing and initiating broadcasting of requests.
@@ -87,6 +88,15 @@ public class ReplicaMgrService
 		{
 			return isLeader;
 		}
+	}
+	
+	/**
+	 * Fetches the FIFO broadcast system corresponding to this manager.
+	 * @return	FIFO broadcast system object
+	 */
+	public FIFOBroadcastSys getFifoBroadcastSys()
+	{
+		return this.fifoBroadcastSys;
 	}
 	
 	/**

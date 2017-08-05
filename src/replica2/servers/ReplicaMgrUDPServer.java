@@ -9,6 +9,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import frontend.entities.Request;
+import replica1.servers.RMFailDetectUDPThread;
 import replica2.services.ReplicaMgrService;
 
 /**
@@ -27,8 +28,16 @@ public class ReplicaMgrUDPServer
 		System.out.println("Manager UDP Server for Replica2 has been started.");
 		
 		//Launching a parallel thread for communicating with failure detection system
-		RMFailDetectUDPThread rmFDUDPThread = new RMFailDetectUDPThread();
-		rmFDUDPThread.start();
+		RMFailDetectUDPThread rmFDUDPThread;
+		try 
+		{
+			rmFDUDPThread = new RMFailDetectUDPThread(rmService.getFifoBroadcastSys());
+			rmFDUDPThread.start();
+		} 
+		catch (SocketException se) 
+		{
+			se.printStackTrace();
+		} 
 		
 		//Performing major request processing tasks
 		try

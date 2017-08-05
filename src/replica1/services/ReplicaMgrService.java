@@ -92,6 +92,15 @@ public class ReplicaMgrService
 	}
 	
 	/**
+	 * Fetches the FIFO broadcast system corresponding to this manager.
+	 * @return	FIFO broadcast system object
+	 */
+	public FIFOBroadcastSys getFifoBroadcastSys()
+	{
+		return this.fifoBroadcastSys;
+	}
+	
+	/**
 	 * Parses, processes and broadcasts (if this is the leader) requests.
 	 * @param 	newRequest	Request received for processing
 	 * @return	Success or failure message based on the processing status of the request

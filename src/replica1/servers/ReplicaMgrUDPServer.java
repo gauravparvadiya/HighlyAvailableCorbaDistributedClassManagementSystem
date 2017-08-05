@@ -28,14 +28,16 @@ public class ReplicaMgrUDPServer
 		
 		//Launching a parallel thread for communicating with failure detection system
 		RMFailDetectUDPThread rmFDUDPThread;
-		try {
-			rmFDUDPThread = new RMFailDetectUDPThread();
+		try 
+		{
+			rmFDUDPThread = new RMFailDetectUDPThread(rmService.getFifoBroadcastSys());
 			rmFDUDPThread.start();
-		} catch (SocketException e) {
-			e.printStackTrace();
 		} 
-		
-		
+		catch (SocketException se) 
+		{
+			se.printStackTrace();
+		} 
+				
 		//Performing major request processing tasks
 		try
 		{

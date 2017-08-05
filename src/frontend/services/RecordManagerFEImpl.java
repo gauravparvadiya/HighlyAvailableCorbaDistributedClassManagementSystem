@@ -23,12 +23,12 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	/**
 	 * Lead server host name.
 	 */
-	private String leadServerHostname;
+	private String leadServerHostname = null;
 
 	/**
 	 * Lead server port number.
 	 */
-	private int leadServerPort;
+	private int leadServerPort = -1;
 
 	/**
 	 * Object used as a lock for lead server UDP connection details update and access.
@@ -44,10 +44,7 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	replica3.servers.RMFailDetectUDPThread rm3;
 	
 	public RecordManagerFEImpl() 
-	{
-		leadServerHostname = null;
-		leadServerPort = -1;
-		
+	{		
 		//TODO remove later
 		//leadServerHostname = "localhost";
 		//leadServerPort = 6790;
@@ -64,14 +61,18 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	 * Updates the latest hostname and port number of the current leader server.
 	 * @param	leadServerDetails	String containing the leader hostname and port number
 	 */
-	public void setLeadServerDetails(String leadServerDetails) 
+	public void setLeadServerDetails(String leadServerDetails)
 	{
 		String[] leadDetails = leadServerDetails.trim().split("_");
 
 		synchronized (leadUDPDtlsLock) 
 		{
-			this.leadServerHostname = leadDetails[1].trim();
-			this.leadServerPort = Integer.parseInt(leadDetails[2].trim());
+			leadServerHostname = leadDetails[1].trim();
+			leadServerPort = Integer.parseInt(leadDetails[2].trim());
+			
+			//TODO remove later
+			System.out.println("set leadServerHostname: " + leadServerHostname);
+			System.out.println("set leadServerPort: " + leadServerPort);
 		}
 	}
 
@@ -277,6 +278,10 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			String[] leadServerDetails = getLeadServerDetails();
 			String leadHostname = leadServerDetails[0];
 			int leadPort = Integer.parseInt(leadServerDetails[1]);
+			
+			//TODO remove later
+			System.out.println("in leadServerHostname: " + leadServerHostname);
+			System.out.println("in leadServerPort: " + leadServerPort);
 
 			//Invoking FIFO System to send first request in the queue to the lead server for processing
 			processStatus = fifoOrdSys.sendFirstRequest(leadHostname, leadPort);
@@ -300,6 +305,10 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			leadDetails[0] = leadServerHostname;
 			leadDetails[1] = leadServerPort + "";
 		}
+		
+		//TODO remove later
+		System.out.println("get leadServerHostname: " + leadServerHostname);
+		System.out.println("get leadServerPort: " + leadServerPort);
 
 		return leadDetails;
 	}

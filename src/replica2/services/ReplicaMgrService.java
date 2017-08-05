@@ -3,6 +3,7 @@ package replica2.services;
 import java.util.ArrayList;
 import java.util.List;
 import frontend.entities.Request;
+import replica1.services.FIFOBroadcastSys;
 import replica2.servers.CenterServerUDPThread;
 import replica2.services.RecordManagerImpl;
 import replica2.services.ReqProcessClientThread;
@@ -88,6 +89,15 @@ public class ReplicaMgrService
 		{
 			return isLeader;
 		}
+	}
+	
+	/**
+	 * Fetches the FIFO broadcast system corresponding to this manager.
+	 * @return	FIFO broadcast system object
+	 */
+	public FIFOBroadcastSys getFifoBroadcastSys()
+	{
+		return this.fifoBroadcastSys;
 	}
 	
 	/**

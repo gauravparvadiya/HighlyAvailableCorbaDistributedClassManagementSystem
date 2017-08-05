@@ -19,7 +19,7 @@ import frontend.entities.Request;
  * @author Hirangi Naik
  * @author Jyotsana Gupta
  */
-public class FIFOBroadcastSys 
+public class FIFOBroadcastSys
 {
 	/**
 	 * Stores hostnames and port numbers of secondary servers.
