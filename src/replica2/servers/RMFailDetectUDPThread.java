@@ -100,7 +100,7 @@ public class RMFailDetectUDPThread extends Thread {
 										replica3.services.ReplicaMgrService.setIsLeader("leaderstatus_false");
 										
 										RecordManagerFEImpl rmanager = new RecordManagerFEImpl();
-										rmanager.setLeadServerDetails("leaderdetails_localhost_6491");
+										rmanager.setLeadServerDetails("leaderdetails_localhost_6794");
 										
 										
 										
