@@ -144,8 +144,8 @@ public class RMFailDetectUDPThread extends Thread {
 									System.out.println("here 3");
 									System.out.println("Restart RM3");
 									//replica3.servers.RMFailDetectUDPThread.main(null);
-									replica3.servers.RMFailDetectUDPThread rm3 = new replica3.servers.RMFailDetectUDPThread();
-									rm3.start();
+//									replica3.servers.RMFailDetectUDPThread rm3 = new replica3.servers.RMFailDetectUDPThread();
+//									rm3.start();
 								}
 								socket.close();
 							}
