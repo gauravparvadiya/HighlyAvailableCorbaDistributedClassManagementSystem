@@ -1,6 +1,8 @@
 package replica3.servers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -13,18 +15,21 @@ import frontend.services.ReplicaLeaderManager;
 import replica3.services.FIFOBroadcastSys;
 
 public class RMFailDetectUDPThread extends Thread {
-	private static DatagramSocket serverSocket;
-	private static int serverPort;
-	private static ReplicaInfo info;
-	private static Boolean statusOfRM2;
-	private static Boolean statusOfRM1;
-	private static String checkStatusOf;
+	private  DatagramSocket serverSocket;
+	private  int serverPort;
+	private  ReplicaInfo info;
+	private  Boolean statusOfRM2;
+	private  Boolean statusOfRM1;
+	private  String checkStatusOf;
 	private static Thread t1;
 	private static Thread t2;
 	private static Thread t3;
 	private static Thread t4;
 	private static Thread t5;
 	FIFOBroadcastSys sys = null;
+	
+	replica2.servers.RMFailDetectUDPThread rmFail2;
+	replica1.servers.RMFailDetectUDPThread rmFail1;
 	
 	public RMFailDetectUDPThread() {
 		// TODO Auto-generated constructor stub
@@ -41,7 +46,7 @@ public class RMFailDetectUDPThread extends Thread {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static void stopChildThread() {
+	public void stopChildThread() {
 		t1.stop();
 		t2.stop();
 		t3.stop();
@@ -92,9 +97,30 @@ public class RMFailDetectUDPThread extends Thread {
 							if (new String(reply.getData()).trim().equalsIgnoreCase("RM2 is live")) {
 								statusOfRM1 = true;
 							} else {
-//								replica2.servers.RMFailDetectUDPThread.stopChildThread();
-//								replica2.servers.RMFailDetectUDPThread rm2 = new replica2.servers.RMFailDetectUDPThread();
-//								rm2.start();
+								DatagramSocket socket1 = new DatagramSocket();
+								
+								byte[] requestMessage = "RM2".getBytes();
+								DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
+										host, 6502);
+								socket1.send(request1);
+								
+								byte[] buffer = new byte[100];
+								DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
+								socket1.receive(receive);
+								ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+								ObjectInputStream is = new ObjectInputStream(in);
+								Object o = is.readObject();
+								if (o instanceof replica2.servers.RMFailDetectUDPThread) {
+									rmFail2 = (replica2.servers.RMFailDetectUDPThread) o;
+								}
+								rmFail2.stopChildThread();
+								try {
+									rmFail2.stop();
+								} catch (ThreadDeath e) {
+									System.out.println("RM2 stopped");
+								}
+								rmFail2.start();
+								
 								System.out.println("Restart RM2");
 							}
 							socket.close();
@@ -116,9 +142,28 @@ public class RMFailDetectUDPThread extends Thread {
 								statusOfRM1 = true;
 								System.out.println("here 2");
 							} else {
-//								replica1.servers.RMFailDetectUDPThread.stopChildThread();
-//								replica1.servers.RMFailDetectUDPThread rm1 = new replica1.servers.RMFailDetectUDPThread();
-//								rm1.start();
+								DatagramSocket socket1 = new DatagramSocket();
+								byte[] requestMessage = "RM1".getBytes();
+								DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
+										host, 6502);
+								socket1.send(request1);
+								byte[] buffer = new byte[100];
+								DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
+								socket1.receive(receive);
+								ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+								ObjectInputStream is = new ObjectInputStream(in);
+								Object o = is.readObject();
+								if (o instanceof replica1.servers.RMFailDetectUDPThread) {
+									rmFail1 = (replica1.servers.RMFailDetectUDPThread) o;
+								}
+								rmFail1.stopChildThread();
+								try {
+									rmFail1.stop();
+								} catch (ThreadDeath e) {
+									System.out.println("RM1 stopped");
+								}
+								rmFail1.start();
+								
 								System.out.println("here 3");
 								System.out.println("Restart RM1");
 							}
