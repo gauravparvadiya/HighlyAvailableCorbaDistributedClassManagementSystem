@@ -12,12 +12,12 @@ import replica1.services.FIFOBroadcastSys;
 import replica1.services.ReplicaMgrService;
 
 public class RMFailDetectUDPThread extends Thread {
-	private static DatagramSocket serverSocket;
-	private static int serverPort;
-	private static ReplicaInfo info;
-	private static Boolean statusOfRM2;
-	private static Boolean statusOfRM3;
-	private static String checkStatusOf;
+	private  DatagramSocket serverSocket;
+	private  int serverPort;
+	private  ReplicaInfo info;
+	private  Boolean statusOfRM2;
+	private  Boolean statusOfRM3;
+	private  String checkStatusOf;
 	private static Thread t1;
 	private static Thread t2;
 	private static Thread t3;

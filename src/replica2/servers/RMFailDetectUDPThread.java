@@ -39,7 +39,7 @@ public class RMFailDetectUDPThread extends Thread {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void stopChildThread() {
+	public static void stopChildThread() {
 		t1.stop();
 		t2.stop();
 		t3.stop();
