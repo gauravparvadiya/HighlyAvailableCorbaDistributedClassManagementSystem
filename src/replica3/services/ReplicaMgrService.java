@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import replica3.services.ReqProcessClientThread;
 import frontend.entities.Request;
-import replica1.services.FIFOBroadcastSys;
+import replica3.services.FIFOBroadcastSys;
 
 /**
  * Replica manager service class for parsing, processing and initiating broadcasting of requests.
- * @author Jyotsana Gupta
+ * @author Hirangi Naik
  */
 public class ReplicaMgrService
 {

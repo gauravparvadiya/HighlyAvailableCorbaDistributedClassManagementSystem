@@ -1,21 +1,19 @@
 package replica3.entities;
 
-public class TeacherRecord extends Record{
-	
+import replica3.entities.Record;
+
+/**
+ * Class for defining and managing the attributes of a teacher record.
+ * @author Hirangi Naik
+ */
+public class TeacherRecord extends Record
+{
 	private static final long serialVersionUID = 1L;
 	private String address;
 	private String phone;
 	private String specialization;
 	private String location;
-	private String lname;
-
-	/**
-	 * @return the lname
-	 */
-	public String getLname() {
-		return lname;
-	}
-
+	
 	/**
 	 * Default (unparameterized) constructor.
 	 */
@@ -29,16 +27,19 @@ public class TeacherRecord extends Record{
 	}
 	
 	/**
-	 * @param fname
-	 * @param lname
-	 * @param address
-	 * @param phone
-	 * @param specialization
-	 * @param location
-	 * @param id
+	 * Constructor with all the attribute values provided as parameters.
+	 * @param	recordID		Unique ID to identify the teacher
+	 * @param	firstName		First name of the teacher
+	 * @param 	lastName		Last name of the teacher
+	 * @param 	address			Address of the teacher
+	 * @param 	phone			Phone number of the teacher
+	 * @param 	specialization	Subject that the teacher specializes in (e.g. French, Math, etc.)
+	 * @param 	location		Location of the teacher (e.g. MTL, LVL, etc.)
 	 */
-	public TeacherRecord(String id,String fname, String lname, String address, String phone, String specialization, String location) {
-		super();
+	public TeacherRecord(String recordID, String firstName, String lastName, String address, 
+							String phone, String specialization, String location)
+	{
+		super(recordID, firstName, lastName);
 		this.address = address;
 		this.phone = phone;
 		this.specialization = specialization;
@@ -46,59 +47,65 @@ public class TeacherRecord extends Record{
 	}
 
 	/**
-	 * @return the address
+	 * Fetches the address of this teacher record.
+	 * @return	address of this teacher
 	 */
-	public String getAddress() {
+	public String getAddress() 
+	{
 		return address;
 	}
 
 	/**
-	 * @param address the address to set
+	 * Fetches the phone number of this teacher record.
+	 * @return	phone number of this teacher
 	 */
-	public void setAddress(String address) {
-		this.address = address;
-	}
-
-	/**
-	 * @return the phone
-	 */
-	public String getPhone() {
+	public String getPhone() 
+	{
 		return phone;
 	}
 
 	/**
-	 * @param phone the phone to set
+	 * Fetches the specialization subject of this teacher record.
+	 * @return	specialization subject of this teacher
 	 */
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
-	/**
-	 * @return the specialization
-	 */
-	public String getSpecialization() {
+	public String getSpecialization() 
+	{
 		return specialization;
 	}
 
 	/**
-	 * @param specialization the specialization to set
+	 * Fetches the location of this teacher record.
+	 * @return	location of this teacher
 	 */
-	public void setSpecialization(String specialization) {
-		this.specialization = specialization;
-	}
-
-	/**
-	 * @return the location
-	 */
-	public String getLocation() {
+	public String getLocation() 
+	{
 		return location;
-	}
-
+	}	
+	
 	/**
-	 * @param location the location to set
+	 * Assigns a specific address to this teacher record.
+	 * @param 	address	Address to be assigned
 	 */
-	public void setLocation(String location) {
-		this.location = location;
+	public void setAddress(String address) 
+	{
+		this.address = address;
 	}
 	
+	/**
+	 * Assigns a specific phone number to this teacher record.
+	 * @param 	phone	Phone number to be assigned
+	 */
+	public void setPhone(String phone)
+	{
+		this.phone = phone;
+	}
+	
+	/**
+	 * Assigns a specific location to this teacher record.
+	 * @param 	location	Location to be assigned
+	 */
+	public void setLocation(String location) 
+	{
+		this.location = location;
+	}
 }

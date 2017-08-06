@@ -14,7 +14,7 @@ import replica3.services.ReplicaMgrService;
 /**
  * Replica Manager's UDP server class for receiving and forwarding requests for processing
  * and communicating its results to clients.
- * @author Jyotsana Gupta
+ * @author Hirangi Naik
  */
 public class ReplicaMgrUDPServer
 {
