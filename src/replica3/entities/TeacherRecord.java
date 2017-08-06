@@ -1,7 +1,5 @@
 package replica3.entities;
 
-import replica3.entities.Record;
-
 /**
  * Class for defining and managing the attributes of a teacher record.
  * @author Hirangi Naik

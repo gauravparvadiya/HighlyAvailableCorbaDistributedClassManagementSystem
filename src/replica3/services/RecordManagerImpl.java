@@ -619,9 +619,9 @@ public class RecordManagerImpl
 		Map<String, List<String>> serverConnDetails = new HashMap<String, List<String>>();
 		
 		//Hard-coded connection details, for now; later, could be changed to file read
-		serverConnDetails.put("MTL", new ArrayList<String>(Arrays.asList("localhost", "6795")));
-		serverConnDetails.put("LVL", new ArrayList<String>(Arrays.asList("localhost", "6796")));
-		serverConnDetails.put("DDO", new ArrayList<String>(Arrays.asList("localhost", "6797")));
+		serverConnDetails.put("MTL", new ArrayList<String>(Arrays.asList("localhost", "6799")));
+		serverConnDetails.put("LVL", new ArrayList<String>(Arrays.asList("localhost", "6800")));
+		serverConnDetails.put("DDO", new ArrayList<String>(Arrays.asList("localhost", "6801")));
 		
 		return serverConnDetails;
 	}

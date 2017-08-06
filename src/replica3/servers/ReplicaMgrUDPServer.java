@@ -8,7 +8,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import frontend.entities.Request;
-import replica3.servers.RMFailDetectUDPThread;
 import replica3.services.ReplicaMgrService;
 
 /**
@@ -22,7 +21,7 @@ public class ReplicaMgrUDPServer
 	private static ReplicaMgrService rmService = new ReplicaMgrService();
 	private static DatagramSocket serverSocket = null;
 	
-	public static void main(String[] args) throws SocketException
+	public static void main(String[] args)
 	{		
 		System.out.println("Manager UDP Server for Replica3 has been started.");
 		

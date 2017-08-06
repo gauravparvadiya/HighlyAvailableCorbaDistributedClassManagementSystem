@@ -126,7 +126,7 @@ public class ReplicaMgrService
 		//Handle Center Server crash and re-process request
 		if (processStatus.trim().toLowerCase().indexOf("timeout") >= 0)
 		{
-			System.out.println("Center Server processing timeout exceeded at replica3, indicating a crash.");
+			System.out.println("Center Server processing timeout exceeded, indicating a crash.");
 			processStatus = handleServerCrash(centerID, remServHostname, remServPort, newRequest);
 		}
 		
