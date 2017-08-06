@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import replica3.services.ReqProcessClientThread;
 import frontend.entities.Request;
-import replica1.services.FIFOBroadcastSys;
+import replica3.services.FIFOBroadcastSys;
 
 /**
  * Replica manager service class for parsing, processing and initiating broadcasting of requests.
- * @author Jyotsana Gupta
+ * @author Hirangi Naik
  */
 public class ReplicaMgrService
 {
@@ -126,7 +126,7 @@ public class ReplicaMgrService
 		//Handle Center Server crash and re-process request
 		if (processStatus.trim().toLowerCase().indexOf("timeout") >= 0)
 		{
-			System.out.println("Center Server processing timeout exceeded at replica3, indicating a crash.");
+			System.out.println("Center Server processing timeout exceeded, indicating a crash.");
 			processStatus = handleServerCrash(centerID, remServHostname, remServPort, newRequest);
 		}
 		

@@ -7,7 +7,6 @@ import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-
 import frontend.entities.Request;
 import replica1.services.ReplicaMgrService;
 
@@ -32,7 +31,7 @@ public class ReplicaMgrUDPServer
 		{
 			rmFDUDPThread = new RMFailDetectUDPThread(rmService.getFifoBroadcastSys());
 			rmFDUDPThread.start();
-		} 
+		}
 		catch (SocketException se) 
 		{
 			se.printStackTrace();

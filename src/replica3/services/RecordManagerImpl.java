@@ -1,5 +1,9 @@
 package replica3.services;
 
+import replica3.entities.Record;
+import replica3.entities.StudentRecord;
+import replica3.entities.TeacherRecord;
+import replica3.utilities.CenterServerUtil;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,19 +13,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import replica3.services.RecCtrClientThread;
-import replica3.services.RecTransferClientThread;
-import replica3.utilities.CenterServerUtil;
-import replica3.entities.Record;
-import replica3.entities.StudentRecord;
-import replica3.entities.TeacherRecord;
 
+/**
+ * Center server implementation defining methods for student-teacher record management.
+ * @author Hirangi Naik	
+ */
 public class RecordManagerImpl
 {	
 	/**
 	 * Counter for unique ID of student-teacher records for a server.
 	 */
-	private int lastrecordIDCounter;
+	private int recordIDCounter;
 	
 	/**
 	 * Collection of student and teacher records for a server.
@@ -33,19 +35,17 @@ public class RecordManagerImpl
 	 */
 	private final Object recordIDCtrLock = new Object();
 	
-	private static final String LOG_FILE_PATH = "D:\\Concordia\\Courses - Summer 2017\\COMP 6231 - DSD\\Project\\Logs\\Replica3\\CenterServer\\";
+	private static final String LOG_FILE_PATH = "D:\\Concordia\\Courses - Summer 2017\\COMP 6231 - DSD\\Project\\Logs\\replica3\\CenterServer\\";
 	private String fileName;
-	
 	private String centerID;
-	
-	
+		
 	/**
 	 * Parameterized constructor.
 	 * @param	centerID	Acronym for identifying the server which creates this remote object
 	 */
 	public RecordManagerImpl(String centerID)
 	{
-		lastrecordIDCounter = 10000;
+		recordIDCounter = 10000;
 		centerRecords = new HashMap<Character, List<Record>>();
 		this.centerID = centerID;
 		fileName = LOG_FILE_PATH + centerID + ".txt";
@@ -54,47 +54,124 @@ public class RecordManagerImpl
 		createInitialRecords(centerID);
 	}
 	
+	/**
+	 * Creates a new teacher record with the values provided as parameters, and adds it to the server's record hashmap.
+	 * @param	mgrID			Unique ID of the center manager who performs this operation
+	 * @param	firstName		First name of the teacher
+	 * @param 	lastName		Last name of the teacher
+	 * @param 	address			Address of the teacher
+	 * @param 	phone			Phone number of the teacher
+	 * @param 	specialization	Subject that the teacher specializes in (e.g. French, Math, etc.)
+	 * @param 	location		Location of the teacher (e.g. MTL, LVL, etc.)
+	 * @return	Success or failure status message of the operation
+	 */
 	public String createTRecord(String mgrID, String firstName, String lastName, String address, String phone, 
 								String specialization, String location)
-	{		
-		String lastTRecordId = "TR" + "" + ++lastrecordIDCounter;
-		TeacherRecord t = new TeacherRecord(lastTRecordId,firstName, lastName, address, phone, specialization, location);
+	{
+		String recordID = null;
+		String opStatus = validateTValues(firstName, lastName, address, phone, specialization, location);
+		
+		if (opStatus == null)
+		{
+			synchronized(recordIDCtrLock)
+			{
+				recordID = "TR" + (recordIDCounter++);
+			}
+			TeacherRecord tRecord = new TeacherRecord(recordID, firstName, lastName, address, phone, specialization, location);
+			boolean recAdded = addRecord(tRecord);
+			if (!recAdded)
+				opStatus = "Failed to create teacher record";
+			else
+				opStatus = "Teacher record created successfully";
+		}
+		
+		//Recording the time of operation
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		String opTime = dateFormat.format(new Date());
+				
 		//Logging the operation
-		String logText = "Create T Rec (ID: " + lastTRecordId
-												+ " | FN: " + firstName 
-												+ " | LN: " + lastName 
-												+ " | ADR: " + address 
-												+ " | PH: " + phone 
-												+ " | SPL: " + specialization 
-												+ " | LOC: " + location 
-												+ ")" + mgrID ;
+		String logText = "Create T Rec (ID: " + recordID
+										+ " | FN: " + firstName 
+										+ " | LN: " + lastName 
+										+ " | ADR: " + address 
+										+ " | PH: " + phone 
+										+ " | SPL: " + specialization 
+										+ " | LOC: " + location 
+										+ ") @" + opTime + " by " + mgrID + " - " + opStatus;
 		CenterServerUtil.writeToFile(fileName, logText);
-		if(addToMap(t))
-			return "success";
-		else
-			return "fail";
+		
+		return opStatus;
 	}
 
+	/**
+	 * Creates a new student record with the values provided as parameters, and adds it to the server's record hashmap.
+	 * @param	mgrID				Unique ID of the center manager who performs this operation
+	 * @param 	firstName			First name of the student
+	 * @param 	lastName			Last name of the student
+	 * @param 	coursesRegistered	List of courses that the student has registered for (e.g. French, Math, etc.)
+	 * @param 	status				Status of the student (active/inactive)
+	 * @param 	statusDate			Date of last status update of the student
+	 * @return	Success or failure status message of the operation
+	 */
 	public String createSRecord(String mgrID, String firstName, String lastName, String coursesRegistered, 
 								String status, String statusDate)
 	{
-		String lastSRecordId = "TR" + "" + ++lastrecordIDCounter;
-		StudentRecord sRecord = new StudentRecord(lastSRecordId, firstName, lastName, coursesRegistered, status, statusDate);
+		String recordID = null;
+		
+		//Creating list of courses registered from the input String
+		List<String> courseList = Arrays.asList(coursesRegistered.split(","));
+		
+		String opStatus = validateSValues(firstName, lastName, courseList, status, statusDate);
+		
+		if (opStatus == null)
+		{
+			//Converting status date String into Date type
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+			Date statusDt = null;
+			try
+			{
+				statusDt = dateFormat.parse(statusDate);
+			}
+			catch(ParseException pe)
+			{
+				//No action to be taken; status date has already been validated at this point
+			}			
+			
+			//Creating student record
+			synchronized(recordIDCtrLock)
+			{
+				recordID = "SR" + (recordIDCounter++);
+			}
+			StudentRecord sRecord = new StudentRecord(recordID, firstName, lastName, courseList, status, statusDt);
+			boolean recAdded = addRecord(sRecord);
+			if (!recAdded)
+				opStatus = "Failed to create student record";
+			else
+				opStatus = "Student record created successfully";
+		}
+		
+		//Recording the time of operation
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		String opTime = dateFormat.format(new Date());
+		
 		//Logging the operation
-				String logText = "Create T Rec (ID: " + lastSRecordId
-						+ " | FN: " + firstName 
-						+ " | LN: " + lastName 
-						+ " | CR: " + coursesRegistered 
-						+ " | ST: " + status 
-						+ " | SDT: " + statusDate
-														+ ")" + mgrID ;
-				CenterServerUtil.writeToFile(fileName, logText);
-		if(addToMap(sRecord))
-			return "success";
-		else
-			return "fail";
+		String logText = "Create S Rec (ID: " + recordID
+										+ " | FN: " + firstName 
+										+ " | LN: " + lastName 
+										+ " | CR: " + courseList 
+										+ " | ST: " + status 
+										+ " | SDT: " + statusDate
+										+ ") @" + opTime + " by " + mgrID + " - " + opStatus;
+		CenterServerUtil.writeToFile(fileName, logText);
+		
+		return opStatus;
 	}
 	
+	/**
+	 * Fetches the record counts of all center servers.
+	 * @param	mgrID	Unique ID of the center manager who performs this operation
+	 * @return	Record counts of all center servers
+	 */
 	public String getRecordCounts(String mgrID)
 	{
 		Map<String, List<String>> serverConnDetails = getAllServers();
@@ -121,7 +198,7 @@ public class RecordManagerImpl
 		}
 		
 		//Calculating record count of this server
-		int ownRecCount = getCount();
+		int ownRecCount = getOwnRecordCount();
 		serverRecCounts.put(centerID.toUpperCase(), ownRecCount);
 		
 		//Waiting for all record counter threads to finish execution
@@ -152,6 +229,14 @@ public class RecordManagerImpl
 		return allServerRecCount;
 	}
 	
+	/**
+	 * Updates a particular field of an existing teacher or student record with a new value.
+	 * @param	mgrID		Unique ID of the center manager who performs this operation
+	 * @param 	recordID	Unique ID for identifying the record to be updated
+	 * @param 	fieldName	Name of the field in the record to be updated
+	 * @param 	newValue	New value to be assigned to the field
+	 * @return	Success or failure message according to the execution status of the edit operation
+	 */
 	public String editRecord(String mgrID, String recordID, String fieldName, String newValue)
 	{
 		String editStatus = "Edit successful";
@@ -213,85 +298,280 @@ public class RecordManagerImpl
 		return editStatus;
 	}
 	
+	/**
+	 * Transfers a record from one Center Server database to another.
+	 * @param	mgrID			Unique ID of the center manager who performs this operation
+	 * @param	recordID		Unique ID for identifying the record to be transferred
+	 * @param	remServerName	Acronym for identifying the destination server
+	 * @return	Success or failure message according to the execution status of the transfer operation
+	 */
 	public String transferRecord (String mgrID, String recordID, String remServerName)
 	{
-					List<Record> targetList = locateRecList(recordID);
-					String transferStatus=null;
-					if (targetList == null)
+		//Validating record transfer details
+		String transferStatus = validateRecTransfer(recordID, remServerName);
+		
+		//If validation is successful
+		if (transferStatus == null)
+		{
+			List<Record> targetList = locateRecList(recordID);
+			if (targetList == null)
+				transferStatus = "No matching record found";
+			else
+			{
+				synchronized(targetList)
+				{
+					//Locating the record to be transferred on the source server
+					Record targetRec = locateRecord(recordID);
+					
+					if (targetRec == null)
 						transferStatus = "No matching record found";
 					else
 					{
-						synchronized(targetList)
+						//Fetching remote server connection details
+						String[] remServDetails = getServerDetails(remServerName);
+						String remServHostname = remServDetails[0];
+						int remServPort = Integer.parseInt(remServDetails[1]);
+						
+						//Launching a thread for sending the record to the remote destination server
+						RecTransferClientThread recTransClientThread = new RecTransferClientThread(targetRec, remServHostname, remServPort);
+						recTransClientThread.start();
+						
+						//Waiting for the record transfer thread to finish its processing
+						try
 						{
-							//Locating the record to be transferred on the source server
-							Record targetRec = locateRecord(recordID);
-							
-							if (targetRec == null)
-								transferStatus = "No matching record found";
-							else
-							{
-								//Fetching remote server connection details
-								String[] remServDetails = getServerDetails(remServerName);
-								String remServHostname = remServDetails[0];
-								int remServPort = Integer.parseInt(remServDetails[1]);
-								
-								//Launching a thread for sending the record to the remote destination server
-								RecTransferClientThread recTransClientThread = new RecTransferClientThread(targetRec, remServHostname, remServPort);
-								recTransClientThread.start();
-								
-								//Waiting for the record transfer thread to finish its processing
-								try
-								{
-									recTransClientThread.join();
-								}
-								catch(InterruptedException ie)
-								{
-									System.out.println("Exception occurred while transferring record: " + ie.getMessage());
-								}
-								
-								//Checking the send operation status
-								transferStatus = recTransClientThread.getTransferStatus();
-								
-								if (transferStatus.toLowerCase().indexOf("success") >= 0)
-								{
-									//Deleting the record from the source server
-									deleteRecord(targetRec);
-									transferStatus = "Transfer successful";
-								}
-							}
+							recTransClientThread.join();
+						}
+						catch(InterruptedException ie)
+						{
+							System.out.println("Exception occurred while transferring record: " + ie.getMessage());
+						}
+						
+						//Checking the send operation status
+						transferStatus = recTransClientThread.getTransferStatus();
+						
+						if (transferStatus.toLowerCase().indexOf("success") >= 0)
+						{
+							//Deleting the record from the source server
+							deleteRecord(targetRec);
+							transferStatus = "Transfer successful";
 						}
 					}
-				
-				
-				//Recording the time of operation
-				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				String opTime = dateFormat.format(new Date());
-				
-				//Logging the operation
-				String logText = "Transfer Rec (ID: " + recordID 
-												+ " | SRV: " + remServerName
-												+ ") @" + opTime + " by " + mgrID + " - " + transferStatus;
-				CenterServerUtil.writeToFile(fileName, logText);
+				}
+			}
+		}
+		
+		//Recording the time of operation
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		String opTime = dateFormat.format(new Date());
+		
+		//Logging the operation
+		String logText = "Transfer Rec (ID: " + recordID 
+										+ " | SRV: " + remServerName
+										+ ") @" + opTime + " by " + mgrID + " - " + transferStatus;
+		CenterServerUtil.writeToFile(fileName, logText);
 
-				return transferStatus;
+		return transferStatus;
 	}
 	
 	/**
-	 * Calculates the teacher-student record count of this server.
-	 * @return	Record count of this server
+	 * Creates initial record
+	 * @param 	centerID	Acronym for identifying the server in which records are to be created
 	 */
-	public int getOwnRecordCount()
+	private void createInitialRecords(String centerID)
 	{
-		int recCount = 0;
-		
-		for (Map.Entry<Character, List<Record>> entry : centerRecords.entrySet())
+		if (centerID.equalsIgnoreCase("MTL"))
+			createInitialMtlRecords();
+		else if (centerID.equalsIgnoreCase("LVL"))
+			createInitialLvlRecords();
+		else if (centerID.equalsIgnoreCase("DDO"))
+			createInitialDdoRecords();
+	}
+	
+	/**
+	 * Creates some initial hard-coded records for Montreal center server.
+	 */
+	private void createInitialMtlRecords()
+	{
+		TeacherRecord tRec = new TeacherRecord("TR00001", "Joey", "Tribbiani", "34 Grove Street", "3548576788", 
+												"Performing Arts", "MTL");
+		TeacherRecord gRec = new TeacherRecord("TR00002", "Monica", "Geller", "110 Main Street", "3548342315", 
+												"French", "DDO");
+		StudentRecord bRec = null;
+		try
 		{
-			List<Record> recList = entry.getValue();
-			int listRecCount = recList.size();
-			recCount += listRecCount;
+			bRec = new StudentRecord("SR00003", "Frank", "Buffay", new ArrayList<String>(Arrays.asList("Math", "French")), 
+										"active", new SimpleDateFormat("yyyy/MM/dd").parse("2016/08/28"));
 		}
-				
-		return recCount;
+		catch(ParseException pe)
+		{
+			//No action to be taken; hard-coded date
+		}
+		
+		List<Record> tRecList = new ArrayList<Record>();
+		tRecList.add(tRec);
+		centerRecords.put('T', tRecList);
+		
+		List<Record> gRecList = new ArrayList<Record>();
+		gRecList.add(gRec);
+		centerRecords.put('G', gRecList);
+		
+		List<Record> bRecList = new ArrayList<Record>();
+		bRecList.add(bRec);
+		centerRecords.put('B', bRecList);
+	}
+	
+	/**
+	 * Creates some initial hard-coded records for Laval center server.
+	 */
+	private void createInitialLvlRecords()
+	{
+		TeacherRecord gRec1 = new TeacherRecord("TR00004", "Ross", "Geller", "234 Woodwork Avenue", "8657456788", 
+												"Paleontology", "LVL");
+		TeacherRecord gRec2 = new TeacherRecord("TR00005", "Rachel", "Green", "110 Main Street", "3548342879", 
+												"Fashion Design", "DDO");
+		
+		List<Record> gRecList = new ArrayList<Record>();
+		gRecList.add(gRec1);
+		gRecList.add(gRec2);
+		centerRecords.put('G', gRecList);
+	}
+	
+	/**
+	 * Creates some initial hard-coded records for Dollard-des-Ormeaux center server.
+	 */
+	private void createInitialDdoRecords()
+	{
+		StudentRecord jRec = null;
+		StudentRecord mRec = null;
+		StudentRecord yRec = null;
+		StudentRecord sRec = null;
+		try
+		{
+			jRec = new StudentRecord("SR00006", "Tag", "Jones", new ArrayList<String>(Arrays.asList("Fashion Design", "Spanish")), 
+										"active", new SimpleDateFormat("yyyy/MM/dd").parse("2015/05/02"));
+			mRec = new StudentRecord("SR00007", "Gavin", "Mitchell", new ArrayList<String>(Arrays.asList("Computer Science")), 
+										"inactive", new SimpleDateFormat("yyyy/MM/dd").parse("2017/04/12"));
+			yRec = new StudentRecord("SR00008", "Ethan", "Young", new ArrayList<String>(Arrays.asList("Geology", "Zoology")), 
+										"active", new SimpleDateFormat("yyyy/MM/dd").parse("2016/12/02"));
+			sRec = new StudentRecord("SR00009", "Mona", "Simmers", new ArrayList<String>(Arrays.asList("Arts", "Botany")), 
+										"inactive", new SimpleDateFormat("yyyy/MM/dd").parse("2015/05/02"));
+		}
+		catch(ParseException pe)
+		{
+			//No action to be taken; hard-coded dates
+		}
+		
+		List<Record> jRecList = new ArrayList<Record>();
+		jRecList.add(jRec);
+		centerRecords.put('J', jRecList);
+		
+		List<Record> mRecList = new ArrayList<Record>();
+		mRecList.add(mRec);
+		centerRecords.put('M', mRecList);
+		
+		List<Record> yRecList = new ArrayList<Record>();
+		yRecList.add(yRec);
+		centerRecords.put('Y', yRecList);
+		
+		List<Record> sRecList = new ArrayList<Record>();
+		sRecList.add(sRec);
+		centerRecords.put('S', sRecList);
+	}
+	
+	/**
+	 * Validates input field values for a teacher record.
+	 * @param 	firstName		First name of the teacher
+	 * @param 	lastName		Last name of the teacher
+	 * @param 	address			Address of the teacher
+	 * @param 	phone			Phone number of the teacher
+	 * @param 	specialization	Subject that the teacher specializes in (e.g. French, Math, etc.)
+	 * @param 	location		Location of the teacher (e.g. MTL, LVL, etc.)
+	 * @return	Success or failure status message of the validation
+	 */
+	private String validateTValues(String firstName, String lastName, String address, String phone, 
+									String specialization, String location)
+	{
+		String validationFailure = null;
+		
+		if ((firstName == null) || (firstName.trim().length() == 0))
+			validationFailure = "First name cannot be null";
+		else if ((lastName == null) || (lastName.trim().length() == 0))
+			validationFailure = "Last name cannot be null";
+		else if ((address == null) || (address.trim().length() == 0))
+			validationFailure = "Address cannot be null";
+		else if ((phone == null) || (phone.trim().length() == 0))
+			validationFailure = "Phone number cannot be null";
+		else if ((specialization == null) || (specialization.trim().length() == 0))
+			validationFailure = "Specialization cannot be null";
+		else if ((location == null) || (location.trim().length() == 0))
+			validationFailure = "Location cannot be null";
+		else if (!((location.equalsIgnoreCase("MTL"))
+				|| (location.equalsIgnoreCase("LVL"))
+				|| (location.equalsIgnoreCase("DDO"))))
+			validationFailure = "Invalid location value for teacher";
+		else
+		{
+			if (!isNumber(phone))
+				validationFailure = "Invalid phone number value for teacher";
+		}
+		
+		return validationFailure;
+	}
+	
+	/**
+	 * Validates input field values for a student record.
+	 * @param 	firstName			First name of the student
+	 * @param 	lastName			Last name of the student
+	 * @param 	coursesRegistered	List of courses that the student has registered for (e.g. French, Math, etc.)
+	 * @param 	status				Status of the student (active/inactive)
+	 * @param 	statusDate			Date of last status update of the student
+	 * @return	Success or failure status message of the validation
+	 */
+	private String validateSValues(String firstName, String lastName, List<String> coursesRegistered, 
+									String status, String statusDate)
+	{
+		String validationFailure = null;
+		
+		if ((firstName == null) || (firstName.trim().length() == 0))
+			validationFailure = "First name cannot be null";
+		else if ((lastName == null) || (lastName.trim().length() == 0))
+			validationFailure = "Last name cannot be null";
+		else if ((coursesRegistered == null) || (coursesRegistered.isEmpty()))
+			validationFailure = "Course list cannot be null";
+		else if ((status == null) || (status.trim().length() == 0))
+			validationFailure = "Status cannot be null";
+		else if ((statusDate == null) || (statusDate.trim().length() == 0))
+			validationFailure = "Status date cannot be null";
+		else if (!((status.equalsIgnoreCase("active")) || (status.equalsIgnoreCase("inactive"))))
+			validationFailure = "Invalid status value for student";
+		else
+		{
+			for (String course : coursesRegistered)
+				if ((course == null) || (course.trim().length() == 0))
+				{
+					validationFailure = "Course name cannot be null";
+					break;
+				}
+			
+			if (validationFailure == null)
+			{
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+				try
+				{
+					Date newDate = dateFormat.parse(statusDate);
+					String newParsedDateStr = dateFormat.format(newDate);
+					boolean dtFormatCorrect = statusDate.equalsIgnoreCase(newParsedDateStr);
+					if (!dtFormatCorrect)
+						validationFailure = "Invalid status date format";
+				}
+				catch(ParseException pe)
+				{
+					validationFailure = "Value for status date is not a date";
+				}
+			}
+		}
+		
+		return validationFailure;
 	}
 	
 	/**
@@ -328,6 +608,254 @@ public class RecordManagerImpl
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Fetches the connection details of all center servers (required for UDP/IP communication).
+	 * @return	Server connection details (center ID, hostname and port number)
+	 */
+	private Map<String, List<String>> getAllServers()
+	{
+		Map<String, List<String>> serverConnDetails = new HashMap<String, List<String>>();
+		
+		//Hard-coded connection details, for now; later, could be changed to file read
+		serverConnDetails.put("MTL", new ArrayList<String>(Arrays.asList("localhost", "6799")));
+		serverConnDetails.put("LVL", new ArrayList<String>(Arrays.asList("localhost", "6800")));
+		serverConnDetails.put("DDO", new ArrayList<String>(Arrays.asList("localhost", "6801")));
+		
+		return serverConnDetails;
+	}
+	
+	/**
+	 * Calculates the teacher-student record count of this server.
+	 * @return	Record count of this server
+	 */
+	public int getOwnRecordCount()
+	{
+		int recCount = 0;
+		
+		for (Map.Entry<Character, List<Record>> entry : centerRecords.entrySet())
+		{
+			List<Record> recList = entry.getValue();
+			int listRecCount = recList.size();
+			recCount += listRecCount;
+		}
+				
+		return recCount;
+	}
+	
+	/**
+	 * Locates the list containing a student or teacher record in the server record hashmap using a record ID.
+	 * @param 	targetRecordID	Unique ID of the record to be found
+	 * @return	A reference to the found record list
+	 * 			null, if no matching record is found
+	 */
+	private List<Record> locateRecList(String targetRecordID)
+	{
+		List<Record> foundRecList = null;
+		
+		for (Map.Entry<Character, List<Record>> entry : centerRecords.entrySet())
+		{
+			List<Record> recList = entry.getValue();
+			for (Record rec : recList)
+			{
+				if (rec.getRecordID().equalsIgnoreCase(targetRecordID))
+				{
+					foundRecList = recList;
+					break;
+				}
+			}
+			
+			if (foundRecList != null)
+				break;
+		}		
+		
+		return foundRecList;
+	}
+	
+	/**
+	 * Locates a student or teacher record in the server record hashmap using a record ID.
+	 * @param 	targetRecordID	Unique ID of the record to be found
+	 * @return	A reference to the found record
+	 * 			null, if no matching record is found
+	 */
+	private Record locateRecord(String targetRecordID)
+	{
+		Record foundRec = null;
+		
+		for (Map.Entry<Character, List<Record>> entry : centerRecords.entrySet())
+		{
+			List<Record> recList = entry.getValue();
+			for (Record rec : recList)
+			{
+				if (rec.getRecordID().equalsIgnoreCase(targetRecordID))
+				{
+					foundRec = rec;
+					break;
+				}
+			}
+			
+			if (foundRec != null)
+				break;
+		}		
+		
+		return foundRec;
+	}
+	
+	/**
+	 * Validates the new value to be assigned and sets the intended teacher record field to it. 
+	 * @param 	fieldName		Name of the field in the record to be updated 
+	 * @param 	updatedValue	New value to be assigned to the field
+	 * @param 	teacherRec		Reference to the record to be updated
+	 * @return	Success or failure message according to the execution status of the update operation
+	 */
+	private String updateTRecord(String fieldName, String updatedValue, TeacherRecord teacherRec)
+	{
+		String editStatus = null;
+		
+		if (fieldName.equalsIgnoreCase("location"))
+		{
+			if (!((updatedValue.equalsIgnoreCase("MTL"))
+				|| (updatedValue.equalsIgnoreCase("LVL"))
+				|| (updatedValue.equalsIgnoreCase("DDO"))))
+				editStatus = "Invalid location value for teacher";
+			else
+			{
+				teacherRec.setLocation(updatedValue.toUpperCase());
+					editStatus = "Edit successful";
+			}
+		}
+		else if (fieldName.equalsIgnoreCase("address"))
+		{
+			teacherRec.setAddress(updatedValue);
+				editStatus = "Edit successful";
+		}
+		else if (fieldName.equalsIgnoreCase("phone"))
+		{
+			if (isNumber(updatedValue))
+			{
+				teacherRec.setPhone(updatedValue);
+				editStatus = "Edit successful";
+			}
+			else
+				editStatus = "Invalid phone number value for teacher";
+		}
+		else
+			editStatus = "Field " + fieldName + " is not editable for teacher";
+		
+		return editStatus;
+	}
+	
+	/**
+	 * Validates the new value to be assigned and sets the intended student record field to it.
+	 * @param 	fieldName	Name of the field in the record to be updated
+	 * @param 	newValue	New value to be assigned to the field
+	 * @param 	studentRec	Reference to the record to be updated
+	 * @return	Success or failure message according to the execution status of the update operation
+	 */
+	private String updateSRecord(String fieldName, String newValue, StudentRecord studentRec)
+	{
+		String editStatus = null;
+		
+		if (fieldName.equalsIgnoreCase("courses_registered"))
+		{
+			//Creating list of courses registered from the input String
+			List<String> updCourseList = Arrays.asList(newValue.split(","));
+			
+			if (updCourseList.isEmpty())
+				editStatus = "New course list cannot be empty";
+			else
+			{
+				for (String course : updCourseList)
+					if ((course == null) || (course.trim().length() == 0))
+					{
+						editStatus = "Course name cannot be null";
+						break;
+					}
+				
+				if (editStatus == null)
+				{
+					studentRec.setCoursesRegistered(updCourseList);
+						editStatus = "Edit successful";
+				}
+			}
+		}
+		else if (fieldName.equalsIgnoreCase("status"))
+		{
+			if (newValue.trim().length() == 0)
+				editStatus = "New value cannot be null";
+			else if (!((newValue.equalsIgnoreCase("active")) || (newValue.equalsIgnoreCase("inactive"))))
+				editStatus = "Invalid status value for student";
+			else
+			{
+				String currStatus = studentRec.getStatus();
+				String newStatus = newValue.toLowerCase();
+				if (!(currStatus.equalsIgnoreCase(newStatus)))
+				{
+					studentRec.setStatus(newStatus);
+					studentRec.setStatusDate(new Date());
+					editStatus = "Edit successful";
+				}
+				else
+					editStatus = "Student is already " + newStatus;
+			}
+		}
+		else if (fieldName.equalsIgnoreCase("status_date"))
+		{
+			if (newValue.trim().length() == 0)
+				editStatus = "New value cannot be null";
+			else
+			{
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+				Date newDate = null;
+				try
+				{
+					newDate = dateFormat.parse(newValue);
+					String newParsedDateStr = dateFormat.format(newDate);
+					boolean dtFormatCorrect = newValue.equalsIgnoreCase(newParsedDateStr);
+					if (!dtFormatCorrect)
+						editStatus = "Invalid status date format";
+				}
+				catch(ParseException pe)
+				{
+					editStatus = "New value for status date is not a date";
+				}
+				
+				if (editStatus == null)
+				{
+					studentRec.setStatusDate(newDate);
+					editStatus = "Edit successful";
+				}
+			}
+		}
+		else
+			editStatus = "Field " + fieldName + " is not editable for student";		
+		
+		return editStatus;
+	}
+	
+	/**
+	 * Validates the record transfer details before allowing the transfer.
+	 * @param 	recordID		Unique ID of the record to be transferred
+	 * @param 	remServerName	Acronym for identifying the remote server
+	 * @return	Success or failure status message of the validation process
+	 */
+	private String validateRecTransfer(String recordID, String remServerName)
+	{
+		String transferStatus = null;
+		
+		if ((recordID == null) || (recordID.trim().length() == 0))
+			transferStatus = "Record ID cannot be null";
+		else if ((remServerName == null) || (remServerName.trim().length() == 0))
+			transferStatus = "Remote server name cannot be null";
+		else if ((!((remServerName.equalsIgnoreCase("MTL"))
+				|| (remServerName.equalsIgnoreCase("LVL"))
+				|| (remServerName.equalsIgnoreCase("DDO")))))
+			transferStatus = "Invalid remote server name";
+		else if (remServerName.equalsIgnoreCase(centerID))
+			transferStatus = "Source and destination servers cannot be the same";
+		
+		return transferStatus;
 	}
 	
 	/**
@@ -389,74 +917,6 @@ public class RecordManagerImpl
 	}
 	
 	/**
-	 * Validates the new value to be assigned and sets the intended student record field to it.
-	 * @param 	fieldName	Name of the field in the record to be updated
-	 * @param 	newValue	New value to be assigned to the field
-	 * @param 	studentRec	Reference to the record to be updated
-	 * @return	Success or failure message according to the execution status of the update operation
-	 */
-	private String updateSRecord(String fieldName, String newValue, StudentRecord studentRec)
-	{
-		String editStatus = null;
-		
-		
-		if (fieldName.equalsIgnoreCase("status"))
-		{
-			if (newValue.trim().length() == 0)
-				editStatus = "New value cannot be null";
-			else if (!((newValue.equalsIgnoreCase("active")) || (newValue.equalsIgnoreCase("inactive"))))
-				editStatus = "Invalid status value for student";
-			else
-			{
-				String currStatus = studentRec.getStatus();
-				String newStatus = newValue.toLowerCase();
-				if (!(currStatus.equalsIgnoreCase(newStatus)))
-				{
-					studentRec.setStatus(newStatus);
-					Date d=new Date();
-					String statusDueDate=d.toString();
-					studentRec.setStatusDueDate(statusDueDate);
-					editStatus = "Edit successful";
-				}
-				else
-					editStatus = "Student is already " + newStatus;
-			}
-		}
-		else if (fieldName.equalsIgnoreCase("status_date"))
-		{
-			if (newValue.trim().length() == 0)
-				editStatus = "New value cannot be null";
-			else
-			{
-				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-				Date newDate = null;
-				try
-				{
-					newDate = dateFormat.parse(newValue);
-					String newParsedDateStr = dateFormat.format(newDate);
-					boolean dtFormatCorrect = newValue.equalsIgnoreCase(newParsedDateStr);
-					if (!dtFormatCorrect)
-						editStatus = "Invalid status date format";
-				}
-				catch(ParseException pe)
-				{
-					editStatus = "New value for status date is not a date";
-				}
-				
-				if (editStatus == null)
-				{
-					studentRec.setStatusDueDate(newDate.toString());
-					editStatus = "Edit successful";
-				}
-			}
-		}
-		else
-			editStatus = "Field " + fieldName + " is not editable for student";		
-		
-		return editStatus;
-	}
-	
-	/**
 	 * Checks if the input String contains only digits.
 	 * @param 	numberString	String to be evaluated
 	 * @return	true, if the String contains only digits
@@ -472,270 +932,5 @@ public class RecordManagerImpl
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * Validates the new value to be assigned and sets the intended teacher record field to it. 
-	 * @param 	fieldName		Name of the field in the record to be updated 
-	 * @param 	updatedValue	New value to be assigned to the field
-	 * @param 	teacherRec		Reference to the record to be updated
-	 * @return	Success or failure message according to the execution status of the update operation
-	 */
-	private String updateTRecord(String fieldName, String updatedValue, TeacherRecord teacherRec)
-	{
-		String editStatus = null;
-		
-		if (fieldName.equalsIgnoreCase("location"))
-		{
-			if (!((updatedValue.equalsIgnoreCase("MTL"))
-				|| (updatedValue.equalsIgnoreCase("LVL"))
-				|| (updatedValue.equalsIgnoreCase("DDO"))))
-				editStatus = "Invalid location value for teacher";
-			else
-			{
-				teacherRec.setLocation(updatedValue.toUpperCase());
-					editStatus = "Edit successful";
-			}
-		}
-		else if (fieldName.equalsIgnoreCase("address"))
-		{
-			teacherRec.setAddress(updatedValue);
-				editStatus = "Edit successful";
-		}
-		else if (fieldName.equalsIgnoreCase("phone"))
-		{
-			if (isNumber(updatedValue))
-			{
-				teacherRec.setPhone(updatedValue);
-				editStatus = "Edit successful";
-			}
-			else
-				editStatus = "Invalid phone number value for teacher";
-		}
-		else
-			editStatus = "Field " + fieldName + " is not editable for teacher";
-		
-		return editStatus;
-	}
-	
-	/**
-	 * Locates a student or teacher record in the server record hashmap using a record ID.
-	 * @param 	targetRecordID	Unique ID of the record to be found
-	 * @return	A reference to the found record
-	 * 			null, if no matching record is found
-	 */
-	private Record locateRecord(String targetRecordID)
-	{
-		Record foundRec = null;
-		
-		for (Map.Entry<Character, List<Record>> entry : centerRecords.entrySet())
-		{
-			List<Record> recList = entry.getValue();
-			for (Record rec : recList)
-			{
-				if (rec.getRecordID().equalsIgnoreCase(targetRecordID))
-				{
-					foundRec = rec;
-					break;
-				}
-			}
-			
-			if (foundRec != null)
-				break;
-		}		
-		
-		return foundRec;
-	}
-	
-	/**
-	 * Locates the list containing a student or teacher record in the server record hashmap using a record ID.
-	 * @param 	targetRecordID	Unique ID of the record to be found
-	 * @return	A reference to the found record list
-	 * 			null, if no matching record is found
-	 */
-	private List<Record> locateRecList(String targetRecordID)
-	{
-		List<Record> foundRecList = null;
-		
-		for (Map.Entry<Character, List<Record>> entry : centerRecords.entrySet())
-		{
-			List<Record> recList = entry.getValue();
-			for (Record rec : recList)
-			{
-				if (rec.getRecordID().equalsIgnoreCase(targetRecordID))
-				{
-					foundRecList = recList;
-					break;
-				}
-			}
-			
-			if (foundRecList != null)
-				break;
-		}		
-		
-		return foundRecList;
-	}
-	
-	/**
-	 * Fetches the connection details of all center servers (required for UDP/IP communication).
-	 * @return	Server connection details (center ID, hostname and port number)
-	 */
-	private Map<String, List<String>> getAllServers()
-	{
-		Map<String, List<String>> serverConnDetails = new HashMap<String, List<String>>();
-		
-		//Hard-coded connection details, for now; later, could be changed to file read
-		serverConnDetails.put("MTL", new ArrayList<String>(Arrays.asList("localhost", "6799")));
-		serverConnDetails.put("LVL", new ArrayList<String>(Arrays.asList("localhost", "6800")));
-		serverConnDetails.put("DDO", new ArrayList<String>(Arrays.asList("localhost", "6801")));
-		
-		return serverConnDetails;
-	}
-	
-	/**
-	 * Adds a new teacher or student record to the server's record hashmap.
-	 * @param 	record	Teacher or student record to be added
-	 * @return	true, if the record is successfully added
-	 */
-	public boolean addToMap(Record record)
-	{
-		String lastName = record.getLastName();
-		char keyChar = lastName.charAt(0);
-		keyChar = Character.toUpperCase(keyChar);
-		
-		List<Record> targetList = null;
-		synchronized(centerRecords)
-		{
-			targetList = centerRecords.get(keyChar);
-			
-			if (targetList == null)
-			{
-				List<Record> newRecordList = new ArrayList<Record>();
-				newRecordList.add(record);
-				centerRecords.put(keyChar, newRecordList);
-			}
-		}
-		
-		if (targetList != null)
-		{
-			synchronized(targetList)
-			{
-				if (!targetList.contains(record))
-					targetList.add(record);
-			}
-		}
-		
-		return true;
-	}
-
-	/**
-	 * Calculates the teacher-student record count of this server.
-	 * @return	Record count of this server
-	 */
-	public int getCount()
-	{
-		int recCount = 0;
-		
-		for (Map.Entry<Character, List<Record>> entry : centerRecords.entrySet())
-		{
-			List<Record> recList = entry.getValue();
-			int listRecCount = recList.size();
-			recCount += listRecCount;
-		}
-				
-		return recCount;
-	}
-	
-	/**
-	 * Creates some initial hard-coded records for a Center Server.
-	 * @param 	centerID	Acronym for identifying the server in which records are to be created
-	 */
-	private void createInitialRecords(String centerID)
-	{
-		if (centerID.equalsIgnoreCase("MTL"))
-			createInitialMtlRecords();
-		else if (centerID.equalsIgnoreCase("LVL"))
-			createInitialLvlRecords();
-		else if (centerID.equalsIgnoreCase("DDO"))
-			createInitialDdoRecords();
-	}
-	
-	/**
-	 * Creates some initial hard-coded records for Montreal center server.
-	 */
-	private void createInitialMtlRecords()
-	{
-		TeacherRecord tRec = new TeacherRecord("TR00001", "Joey", "Tribbiani", "34 Grove Street", "3548576788", 
-												"Performing Arts", "MTL");
-		TeacherRecord gRec = new TeacherRecord("TR00002", "Monica", "Geller", "110 Main Street", "3548342315", 
-												"French", "DDO");
-		StudentRecord bRec = null;
-		bRec = new StudentRecord("SR00003", "Frank", "Buffay","Math,French", 
-									"active", "2016/08/28");
-		
-		List<Record> tRecList = new ArrayList<Record>();
-		tRecList.add(tRec);
-		centerRecords.put('T', tRecList);
-		
-		List<Record> gRecList = new ArrayList<Record>();
-		gRecList.add(gRec);
-		centerRecords.put('G', gRecList);
-		
-		List<Record> bRecList = new ArrayList<Record>();
-		bRecList.add(bRec);
-		centerRecords.put('B', bRecList);
-	}
-	
-	/**
-	 * Creates some initial hard-coded records for Laval center server.
-	 */
-	private void createInitialLvlRecords()
-	{
-		TeacherRecord gRec1 = new TeacherRecord("TR00004", "Ross", "Geller", "234 Woodwork Avenue", "8657456788", 
-												"Paleontology", "LVL");
-		TeacherRecord gRec2 = new TeacherRecord("TR00005", "Rachel", "Green", "110 Main Street", "3548342879", 
-												"Fashion Design", "DDO");
-		
-		List<Record> gRecList = new ArrayList<Record>();
-		gRecList.add(gRec1);
-		gRecList.add(gRec2);
-		centerRecords.put('G', gRecList);
-	}
-	
-	/**
-	 * Creates some initial hard-coded records for Dollard-des-Ormeaux center server.
-	 */
-	private void createInitialDdoRecords()
-	{
-		StudentRecord jRec = null;
-		StudentRecord mRec = null;
-		StudentRecord yRec = null;
-		StudentRecord sRec = null;
-		
-			jRec = new StudentRecord("SR00006", "Tag", "Jones", "Fashion Design,Spanish", 
-										"active", "2015/05/02");
-			mRec = new StudentRecord("SR00007", "Gavin", "Mitchell", "Computer Science", 
-										"inactive","2017/04/12");
-			yRec = new StudentRecord("SR00008", "Ethan", "Young", "Geology, Zoology", 
-										"active", "2016/12/02");
-			sRec = new StudentRecord("SR00009", "Mona", "Simmers", "Arts, Botany", 
-										"inactive", "2015/05/02");
-		
-		
-		List<Record> jRecList = new ArrayList<Record>();
-		jRecList.add(jRec);
-		centerRecords.put('J', jRecList);
-		
-		List<Record> mRecList = new ArrayList<Record>();
-		mRecList.add(mRec);
-		centerRecords.put('M', mRecList);
-		
-		List<Record> yRecList = new ArrayList<Record>();
-		yRecList.add(yRec);
-		centerRecords.put('Y', yRecList);
-		
-		List<Record> sRecList = new ArrayList<Record>();
-		sRecList.add(sRec);
-		centerRecords.put('S', sRecList);
 	}
 }
