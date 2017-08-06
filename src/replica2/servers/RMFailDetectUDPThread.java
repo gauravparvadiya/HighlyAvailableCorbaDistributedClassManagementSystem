@@ -1,6 +1,8 @@
 package replica2.servers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -9,24 +11,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import failuredetectionsys.ReplicaInfo;
-import frontend.services.RecordManagerFEImpl;
 import frontend.services.ReplicaLeaderManager;
 import replica1.services.FIFOBroadcastSys;
 import replica1.services.ReplicaMgrService;
 
 public class RMFailDetectUDPThread extends Thread {
-	private static DatagramSocket serverSocket;
-	private static int serverPort;
-	private static ReplicaInfo info;
-	private static Boolean statusOfRM1;
-	private static Boolean statusOfRM3;
-	private static String checkStatusOf;
+	private  DatagramSocket serverSocket;
+	private  int serverPort;
+	private  ReplicaInfo info;
+	private  Boolean statusOfRM1;
+	private  Boolean statusOfRM3;
+	private  String checkStatusOf;
 	private static Thread t1;
 	private static Thread t2;
 	private static Thread t3;
 	private static Thread t4;
 	private static Thread t5;
 	FIFOBroadcastSys sys = null;
+	
+	replica1.servers.RMFailDetectUDPThread rmFail1;
+	replica3.servers.RMFailDetectUDPThread rmFail3;
 
 	public RMFailDetectUDPThread(FIFOBroadcastSys sys) throws SocketException {
 		this.sys = sys;
@@ -39,7 +43,7 @@ public class RMFailDetectUDPThread extends Thread {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public static void stopChildThread() {
+	public void stopChildThread() {
 		t1.stop();
 		t2.stop();
 		t3.stop();
@@ -115,11 +119,27 @@ public class RMFailDetectUDPThread extends Thread {
 										}
 										
 									}
-									//replica1.servers.RMFailDetectUDPThread rm1 = new replica1.servers.RMFailDetectUDPThread();
-									//rm1.stop();
-									//rm1.start();
-									//replica1.servers.RMFailDetectUDPThread.main(null);
-									System.out.println("Restart RM1");
+									DatagramSocket socket1 = new DatagramSocket();
+									byte[] requestMessage = "RM1".getBytes();
+									DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
+											host, 6502);
+									socket1.send(request1);
+									byte[] buffer = new byte[100];
+									DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
+									socket1.receive(receive);
+									ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+									ObjectInputStream is = new ObjectInputStream(in);
+									Object o = is.readObject();
+									if (o instanceof replica1.servers.RMFailDetectUDPThread) {
+										rmFail1 = (replica1.servers.RMFailDetectUDPThread) o;
+									}
+									rmFail1.stopChildThread();
+									try {
+										rmFail1.stop();
+									} catch (ThreadDeath e) {
+										System.out.println("RM1 stopped");
+									}
+									rmFail1.start();
 								}
 								socket.close();
 
@@ -140,12 +160,27 @@ public class RMFailDetectUDPThread extends Thread {
 									statusOfRM3 = true;
 									System.out.println("here 2");
 								} else {
-									// Restart RM2
-									System.out.println("here 3");
-									System.out.println("Restart RM3");
-									//replica3.servers.RMFailDetectUDPThread.main(null);
-//									replica3.servers.RMFailDetectUDPThread rm3 = new replica3.servers.RMFailDetectUDPThread();
-//									rm3.start();
+									DatagramSocket socket1 = new DatagramSocket();
+									byte[] requestMessage = "RM3".getBytes();
+									DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
+											host, 6502);
+									socket1.send(request1);
+									byte[] buffer = new byte[100];
+									DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
+									socket1.receive(receive);
+									ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+									ObjectInputStream is = new ObjectInputStream(in);
+									Object o = is.readObject();
+									if (o instanceof replica3.servers.RMFailDetectUDPThread) {
+										rmFail3 = (replica3.servers.RMFailDetectUDPThread) o;
+									}
+									rmFail3.stopChildThread();
+									try {
+										rmFail3.stop();
+									} catch (ThreadDeath e) {
+										System.out.println("RM3 stopped");
+									}
+									rmFail3.start();
 								}
 								socket.close();
 							}

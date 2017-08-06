@@ -1,5 +1,10 @@
 package frontend.services;
 
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import frontend.corbasupport.RecordManagerApp.RecordManagerPOA;
@@ -202,21 +207,36 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	 */
 	public String crashLeadServer() 
 	{
-		//TODO leader process crash simulation to be implemented here
-		//If UDP server is required, the same host and port used by FIFO should be used
-		//RMFailDetectUDPThread t1 = new RMFailDetectUDPThread();
-//		try {
-//			rm1 = new RMFailDetectUDPThread();
-//			rm1.stopChildThread();
-//			rm1.stop();
-//		} catch (SocketException e) {
-//			e.printStackTrace();
-//		} catch (ThreadDeath e) {
-//			e.printStackTrace();
-//			System.out.println("RM1 stopped");
-//			return "success";
-//		}
-		
+		try {
+			RMFailDetectUDPThread rmFail1 = null;
+			DatagramSocket socket1 = new DatagramSocket();
+			byte[] requestMessage = "RM1".getBytes();
+			InetAddress host = InetAddress.getByName("localhost");
+			DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
+					host, 6502);
+			socket1.send(request1);
+			byte[] buffer = new byte[100];
+			DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
+			socket1.receive(receive);
+			ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+			ObjectInputStream is = new ObjectInputStream(in);
+			Object o = is.readObject();
+			if (o instanceof replica1.servers.RMFailDetectUDPThread) {
+				rmFail1 = (replica1.servers.RMFailDetectUDPThread) o;
+			}
+			if (rmFail1 != null) {
+				rmFail1.stopChildThread();
+				try {
+					rmFail1.stop();
+				} catch (ThreadDeath e) {
+					System.out.println("RM1 stopped");
+				}
+			}
+			return "Leader crashed";
+			//rmFail1.start();
+		} catch (Exception e) {
+			
+		}
 		return null;
 	}
 
@@ -225,26 +245,60 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	 */
 	public String crashSecondaryServer() 
 	{
+		replica3.servers.RMFailDetectUDPThread rmFail3 = null;
+		replica2.servers.RMFailDetectUDPThread rmFail2 = null;
 		
-//		try {
-//			rm2 = new replica2.servers.RMFailDetectUDPThread();
-//			rm2.stopChildThread();
-//		} catch (SocketException e) {
-//			e.printStackTrace();
-//		} catch (ThreadDeath e) {
-//			System.out.println("Rm2 stopped");
-//		}
-//		
-//		try {
-//			rm3 = new replica3.servers.RMFailDetectUDPThread();
-//			rm3.stopChildThread();
-//		} catch (SocketException e) {
-//			e.printStackTrace();
-//		} catch (ThreadDeath e) {
-//			System.out.println("Rm3 stopped");
-//		}
+		try {
+			DatagramSocket socket1 = new DatagramSocket();
+			byte[] requestMessage = "RM3".getBytes();
+			InetAddress host = InetAddress.getByName("localhost");
+			DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
+					host, 6502);
+			socket1.send(request1);
+			byte[] buffer = new byte[100];
+			DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
+			socket1.receive(receive);
+			ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+			ObjectInputStream is = new ObjectInputStream(in);
+			Object o = is.readObject();
+			if (o instanceof replica3.servers.RMFailDetectUDPThread) {
+				rmFail3 = (replica3.servers.RMFailDetectUDPThread) o;
+			}
+			rmFail3.stopChildThread();
+			try {
+				rmFail3.stop();
+			} catch (ThreadDeath e) {
+				System.out.println("RM3 stopped");
+			}
+			
+			socket1 = new DatagramSocket();
+			requestMessage = "RM2".getBytes();
+			request1 = new DatagramPacket(requestMessage, requestMessage.length,
+					host, 6502);
+			socket1.send(request1);
+			
+			buffer = new byte[100];
+			receive = new DatagramPacket(buffer, buffer.length);
+			socket1.receive(receive);
+			in = new ByteArrayInputStream(buffer);
+			is = new ObjectInputStream(in);
+			o = is.readObject();
+			if (o instanceof replica2.servers.RMFailDetectUDPThread) {
+				rmFail2 = (replica2.servers.RMFailDetectUDPThread) o;
+			}
+			rmFail2.stopChildThread();
+			try {
+				rmFail2.stop();
+			} catch (ThreadDeath e) {
+				System.out.println("RM2 stopped");
+			}
+			rmFail2.start();
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 		
-		return null;
+		return "Rm2 and Rm3 crashed.";
 	}
 
 	/**
