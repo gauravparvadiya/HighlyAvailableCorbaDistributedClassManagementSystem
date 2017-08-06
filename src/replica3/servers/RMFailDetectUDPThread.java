@@ -3,6 +3,7 @@ package replica3.servers;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -14,7 +15,7 @@ import failuredetectionsys.ReplicaInfo;
 import frontend.services.ReplicaLeaderManager;
 import replica3.services.FIFOBroadcastSys;
 
-public class RMFailDetectUDPThread extends Thread {
+public class RMFailDetectUDPThread extends Thread implements Serializable {
 	private  DatagramSocket serverSocket;
 	private  int serverPort;
 	private  ReplicaInfo info;

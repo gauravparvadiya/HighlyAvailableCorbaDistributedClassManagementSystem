@@ -2,6 +2,7 @@ package frontend.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -17,7 +18,7 @@ import replica1.servers.RMFailDetectUDPThread;
  * @author Jyotsana Gupta
  * @author Gauravkumar Parvadiya
  */
-public class RecordManagerFEImpl extends RecordManagerPOA 
+public class RecordManagerFEImpl extends RecordManagerPOA
 {
 	/**
 	 * Instance of FIFOOrderSys for invoking FIFO total request ordering methods.
@@ -207,6 +208,7 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	 */
 	public String crashLeadServer() 
 	{
+		System.out.println("in Crash Lead");
 		try {
 			RMFailDetectUDPThread rmFail1 = null;
 			DatagramSocket socket1 = new DatagramSocket();
@@ -215,16 +217,22 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
 					host, 6502);
 			socket1.send(request1);
-			byte[] buffer = new byte[100];
+			System.out.println("request sent");
+			byte[] buffer = new byte[1000];
 			DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
 			socket1.receive(receive);
+			System.out.println("Receive reply");
 			ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+			System.out.println("1");
 			ObjectInputStream is = new ObjectInputStream(in);
+			System.out.println("1");
 			Object o = is.readObject();
+			System.out.println("1");
 			if (o instanceof replica1.servers.RMFailDetectUDPThread) {
 				rmFail1 = (replica1.servers.RMFailDetectUDPThread) o;
 			}
 			if (rmFail1 != null) {
+				System.out.println("got object of Rm1");
 				rmFail1.stopChildThread();
 				try {
 					rmFail1.stop();
@@ -232,12 +240,13 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 					System.out.println("RM1 stopped");
 				}
 			}
+			socket1.close();
 			return "Leader crashed";
 			//rmFail1.start();
 		} catch (Exception e) {
 			
 		}
-		return null;
+		return "Leader crashed";
 	}
 
 	/**

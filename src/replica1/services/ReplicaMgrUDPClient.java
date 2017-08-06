@@ -3,6 +3,7 @@ package replica1.services;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -14,7 +15,7 @@ import replica1.servers.RMFailDetectUDPThread;
  * UDP client class for Replica Manager.
  * @author Jyotsana Gupta
  */
-public class ReplicaMgrUDPClient 
+public class ReplicaMgrUDPClient
 {
 	private RMFailDetectUDPThread rmFailDetectThread;
 	private String hostname;
@@ -45,11 +46,13 @@ public class ReplicaMgrUDPClient
 			clientSocket = new DatagramSocket();
 			InetAddress serverAddr = InetAddress.getByName(hostname);
 			int serverPort = port;
-			
+			System.out.println("Here1");
 			ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
 			ObjectOutputStream objOutput = new ObjectOutputStream(byteOutput);
+			System.out.println("Here2");
 			objOutput.writeObject(rmFailDetectThread);
 			byte[] objReqMsg = byteOutput.toByteArray();
+			System.out.println("Here3");
 			objOutput.close();
 			byteOutput.close();
 			
@@ -58,14 +61,17 @@ public class ReplicaMgrUDPClient
 		}
 		catch(SocketException se)
 		{
+			se.printStackTrace();
 			System.out.println("Exception occurred while sending failure detection thread from RM UDP/IP client: " + se.getMessage());
 		}
 		catch(UnknownHostException uhe)
 		{
+			uhe.printStackTrace();
 			System.out.println("Exception occurred while sending failure detection thread from RM UDP/IP client: " + uhe.getMessage());
 		}
 		catch(IOException ioe)
 		{
+			ioe.printStackTrace();
 			System.out.println("Exception occurred while sending failure detection thread from RM UDP/IP client: " + ioe.getMessage());
 		}
 		finally
