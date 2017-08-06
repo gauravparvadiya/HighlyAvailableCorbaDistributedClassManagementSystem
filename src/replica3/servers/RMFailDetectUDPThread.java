@@ -25,10 +25,6 @@ public class RMFailDetectUDPThread extends Thread {
 	private static Thread t4;
 	private static Thread t5;
 	FIFOBroadcastSys sys = null;
-	
-	public RMFailDetectUDPThread() {
-		// TODO Auto-generated constructor stub
-	}
 
 	public RMFailDetectUDPThread(FIFOBroadcastSys sys) throws SocketException {
 		this.sys = sys;
@@ -41,7 +37,7 @@ public class RMFailDetectUDPThread extends Thread {
 	}
 
 	@SuppressWarnings("deprecation")
-	public static void stopChildThread() {
+	public void stopChildThread() {
 		t1.stop();
 		t2.stop();
 		t3.stop();
@@ -92,9 +88,8 @@ public class RMFailDetectUDPThread extends Thread {
 							if (new String(reply.getData()).trim().equalsIgnoreCase("RM2 is live")) {
 								statusOfRM1 = true;
 							} else {
-								replica2.servers.RMFailDetectUDPThread.stopChildThread();
-								replica2.servers.RMFailDetectUDPThread rm2 = new replica2.servers.RMFailDetectUDPThread();
-								rm2.start();
+//								replica2.servers.RMFailDetectUDPThread rm2 = new replica2.servers.RMFailDetectUDPThread();
+//								rm2.start();
 								System.out.println("Restart RM2");
 							}
 							socket.close();
@@ -116,9 +111,8 @@ public class RMFailDetectUDPThread extends Thread {
 								statusOfRM1 = true;
 								System.out.println("here 2");
 							} else {
-								replica1.servers.RMFailDetectUDPThread.stopChildThread();
-								replica1.servers.RMFailDetectUDPThread rm1 = new replica1.servers.RMFailDetectUDPThread();
-								rm1.start();
+								//replica1.servers.RMFailDetectUDPThread rm1 = new replica1.servers.RMFailDetectUDPThread();
+								//rm1.start();
 								System.out.println("here 3");
 								System.out.println("Restart RM1");
 							}
