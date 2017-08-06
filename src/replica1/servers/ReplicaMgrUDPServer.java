@@ -9,6 +9,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import frontend.entities.Request;
 import replica1.services.ReplicaMgrService;
+import replica1.services.ReplicaMgrUDPClient;
 
 /**
  * Replica Manager's UDP server class for receiving and forwarding requests for processing
@@ -31,6 +32,10 @@ public class ReplicaMgrUDPServer
 		{
 			rmFDUDPThread = new RMFailDetectUDPThread(rmService.getFifoBroadcastSys());
 			rmFDUDPThread.start();
+			
+			//Sending the failure detection thread to the failure detection system
+			ReplicaMgrUDPClient rmUDPClient = new ReplicaMgrUDPClient(rmFDUDPThread, "localhost", -1);
+			rmUDPClient.sendFailDetectThread();
 		}
 		catch (SocketException se) 
 		{
