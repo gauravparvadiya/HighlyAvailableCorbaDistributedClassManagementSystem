@@ -35,7 +35,7 @@ public class ReplicaMgrUDPServer
 			rmFDUDPThread.start();
 			
 			//Sending the failure detection thread to the failure detection system
-			ReplicaMgrUDPClient rmUDPClient = new ReplicaMgrUDPClient(rmFDUDPThread, "localhost", -1);
+			ReplicaMgrUDPClient rmUDPClient = new ReplicaMgrUDPClient(rmFDUDPThread, "localhost", 6501);
 			rmUDPClient.sendFailDetectThread();
 		} 
 		catch (SocketException se) 
