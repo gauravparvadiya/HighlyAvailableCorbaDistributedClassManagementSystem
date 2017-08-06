@@ -51,6 +51,16 @@ public class FIFOBroadcastSys
 	{
 		synchronized (secServDtlsLock) 
 		{			
+			//TODO uncomment for testing with Replica 2 as leader
+			/*
+			List<String[]> tempDtls = new ArrayList<String[]>();
+			String[] sec1 = {"localhost", "6790"};
+			String[] sec2 = {"localhost", "6798"};
+			tempDtls.add(sec1);
+			tempDtls.add(sec2);
+			secServerDetails = tempDtls;
+			*/
+			
 			return secServerDetails;
 		}
 	}

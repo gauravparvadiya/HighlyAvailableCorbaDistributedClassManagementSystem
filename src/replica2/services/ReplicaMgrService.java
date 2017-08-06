@@ -87,6 +87,9 @@ public class ReplicaMgrService
 	{
 		synchronized (leadStatLock)
 		{
+			//TODO uncomment for testing with Replica 2 as leader
+			//isLeader = true;
+			
 			return isLeader;
 		}
 	}

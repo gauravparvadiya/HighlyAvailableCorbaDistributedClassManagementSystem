@@ -287,6 +287,9 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	private String[] getLeadServerDetails() 
 	{
 		String[] leadDetails = new String[2];
+		
+		//TODO uncomment for testing with Replica 2 as leader
+		//leadServerPort = 6794;
 
 		synchronized (leadUDPDtlsLock) {
 			leadDetails[0] = leadServerHostname;
