@@ -8,6 +8,8 @@ import java.io.StreamCorruptedException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+
+import failuredetectionsys.RMFailObjectServer;
 import frontend.entities.Request;
 import replica1.services.ReplicaMgrService;
 import replica1.services.ReplicaMgrUDPClient;
@@ -35,8 +37,9 @@ public class ReplicaMgrUDPServer implements Serializable
 			rmFDUDPThread.start();
 			
 			//Sending the failure detection thread to the failure detection system
-			ReplicaMgrUDPClient rmUDPClient = new ReplicaMgrUDPClient(rmFDUDPThread, "localhost", 6501);
-			rmUDPClient.sendFailDetectThread();
+//			ReplicaMgrUDPClient rmUDPClient = new ReplicaMgrUDPClient(rmFDUDPThread, "localhost", 6501);
+//			rmUDPClient.sendFailDetectThread();
+			RMFailObjectServer.setRM1(rmFDUDPThread);
 		}
 		catch (SocketException se) 
 		{

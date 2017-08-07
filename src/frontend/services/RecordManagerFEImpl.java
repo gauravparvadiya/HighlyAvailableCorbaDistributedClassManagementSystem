@@ -8,6 +8,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+
+import failuredetectionsys.RMFailObjectServer;
 import frontend.corbasupport.RecordManagerApp.RecordManagerPOA;
 import frontend.entities.Request;
 import frontend.servers.FEUDPServerThread;
@@ -209,45 +211,58 @@ public class RecordManagerFEImpl extends RecordManagerPOA implements Serializabl
 	public String crashLeadServer() 
 	{
 		System.out.println("in Crash Lead");
-		try {
-			//RMFailDetectUDPThread rmFail1 = null;
-			DatagramSocket socket1 = new DatagramSocket();
-			byte[] requestMessage = "RM1".getBytes();
-			InetAddress host = InetAddress.getByName("localhost");
-			DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
-					host, 6502);
-			socket1.send(request1);
-			System.out.println("request sent");
-			byte[] buffer = new byte[1000];
-			DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
-			socket1.receive(receive);
-			System.out.println("Receive reply");
-			ByteArrayInputStream in = new ByteArrayInputStream(buffer);
-			System.out.println("1");
-			ObjectInputStream is = new ObjectInputStream(in);
-			System.out.println("1");
-			//Object o = is.readObject();
-			System.out.println("1");
-			rm1 = (replica1.servers.RMFailDetectUDPThread) is.readObject();
-//			if (is.readObject() instanceof replica1.servers.RMFailDetectUDPThread) {
-//				
-//			}
-			if (rm1 != null) {
-				System.out.println("got object of Rm1");
-				rm1.stopChildThread();
-				try {
-					rm1.stop();
-				} catch (ThreadDeath e) {
-					System.out.println("RM1 stopped");
-				}
-			}
-			socket1.close();
-			return "Leader crashed";
-			//rmFail1.start();
-		} catch (Exception e) {
-			
+		
+		if (RMFailObjectServer.getRm1() != null) {
+			System.out.println("Data available.");
 		}
-		return "Leader crashed";
+		
+		rm1 = RMFailObjectServer.getRm1();
+		if (rm1 != null) {
+			System.out.println("object not null.");
+		}
+		System.out.println("rm1 null");
+//		rm1.stopChildThread();
+//		rm1.stop();
+		return "Lead Crashed";
+//		try {
+//			//RMFailDetectUDPThread rmFail1 = null;
+//			DatagramSocket socket1 = new DatagramSocket();
+//			byte[] requestMessage = "RM1".getBytes();
+//			InetAddress host = InetAddress.getByName("localhost");
+//			DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
+//					host, 6502);
+//			socket1.send(request1);
+//			System.out.println("request sent");
+//			byte[] buffer = new byte[1000];
+//			DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
+//			socket1.receive(receive);
+//			System.out.println("Receive reply");
+//			ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+//			System.out.println("1");
+//			ObjectInputStream is = new ObjectInputStream(in);
+//			System.out.println("1");
+//			//Object o = is.readObject();
+//			System.out.println("1");
+//			rm1 = (replica1.servers.RMFailDetectUDPThread) is.readObject();
+////			if (is.readObject() instanceof replica1.servers.RMFailDetectUDPThread) {
+////				
+////			}
+//			if (rm1 != null) {
+//				System.out.println("got object of Rm1");
+//				rm1.stopChildThread();
+//				try {
+//					rm1.stop();
+//				} catch (ThreadDeath e) {
+//					System.out.println("RM1 stopped");
+//				}
+//			}
+//			socket1.close();
+//			return "Leader crashed";
+//			//rmFail1.start();
+//		} catch (Exception e) {
+//			
+//		}
+//		return "Leader crashed";
 	}
 
 	/**
@@ -258,53 +273,60 @@ public class RecordManagerFEImpl extends RecordManagerPOA implements Serializabl
 //		replica3.servers.RMFailDetectUDPThread rmFail3 = null;
 //		replica2.servers.RMFailDetectUDPThread rmFail2 = null;
 		
-		try {
-			DatagramSocket socket1 = new DatagramSocket();
-			byte[] requestMessage = "RM3".getBytes();
-			InetAddress host = InetAddress.getByName("localhost");
-			DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
-					host, 6502);
-			socket1.send(request1);
-			byte[] buffer = new byte[100];
-			DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
-			socket1.receive(receive);
-			ByteArrayInputStream in = new ByteArrayInputStream(buffer);
-			ObjectInputStream is = new ObjectInputStream(in);
-			//Object o = is.readObject();
-			rm3 = (replica3.servers.RMFailDetectUDPThread) is.readObject();
-//			if (o instanceof replica3.servers.RMFailDetectUDPThread) {
-//				
+		rm2 = RMFailObjectServer.getRm2();
+		rm3 = RMFailObjectServer.getRm3();
+		rm2.stopChildThread();
+		rm3.stopChildThread();
+		rm2.stop();
+		rm3.stop();
+		
+//		try {
+//			DatagramSocket socket1 = new DatagramSocket();
+//			byte[] requestMessage = "RM3".getBytes();
+//			InetAddress host = InetAddress.getByName("localhost");
+//			DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
+//					host, 6502);
+//			socket1.send(request1);
+//			byte[] buffer = new byte[100];
+//			DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
+//			socket1.receive(receive);
+//			ByteArrayInputStream in = new ByteArrayInputStream(buffer);
+//			ObjectInputStream is = new ObjectInputStream(in);
+//			//Object o = is.readObject();
+//			rm3 = (replica3.servers.RMFailDetectUDPThread) is.readObject();
+////			if (o instanceof replica3.servers.RMFailDetectUDPThread) {
+////				
+////			}
+//			rm3.stopChildThread();
+//			try {
+//				rm3.stop();
+//			} catch (ThreadDeath e) {
+//				System.out.println("RM3 stopped");
 //			}
-			rm3.stopChildThread();
-			try {
-				rm3.stop();
-			} catch (ThreadDeath e) {
-				System.out.println("RM3 stopped");
-			}
-			
-			socket1 = new DatagramSocket();
-			requestMessage = "RM2".getBytes();
-			request1 = new DatagramPacket(requestMessage, requestMessage.length,
-					host, 6502);
-			socket1.send(request1);
-			
-			buffer = new byte[100];
-			receive = new DatagramPacket(buffer, buffer.length);
-			socket1.receive(receive);
-			in = new ByteArrayInputStream(buffer);
-			is = new ObjectInputStream(in);
-			rm2 = (replica2.servers.RMFailDetectUDPThread) is.readObject();
-			rm2.stopChildThread();
-			try {
-				rm2.stop();
-			} catch (ThreadDeath e) {
-				System.out.println("RM2 stopped");
-			}
-			rm2.start();
-			
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+//			
+//			socket1 = new DatagramSocket();
+//			requestMessage = "RM2".getBytes();
+//			request1 = new DatagramPacket(requestMessage, requestMessage.length,
+//					host, 6502);
+//			socket1.send(request1);
+//			
+//			buffer = new byte[100];
+//			receive = new DatagramPacket(buffer, buffer.length);
+//			socket1.receive(receive);
+//			in = new ByteArrayInputStream(buffer);
+//			is = new ObjectInputStream(in);
+//			rm2 = (replica2.servers.RMFailDetectUDPThread) is.readObject();
+//			rm2.stopChildThread();
+//			try {
+//				rm2.stop();
+//			} catch (ThreadDeath e) {
+//				System.out.println("RM2 stopped");
+//			}
+//			rm2.start();
+//			
+//		} catch (Exception e) {
+//			// TODO: handle exception
+//		}
 		
 		return "Rm2 and Rm3 crashed.";
 	}

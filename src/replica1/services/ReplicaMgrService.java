@@ -1,6 +1,5 @@
 package replica1.services;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +10,7 @@ import replica1.servers.CenterServerUDPThread;
  * Replica manager service class for parsing, processing and initiating broadcasting of requests.
  * @author Jyotsana Gupta
  */
-public class ReplicaMgrService implements Serializable
+public class ReplicaMgrService
 {
 	/**
 	 * Indicates whether this is a leader or a secondary replica manager.
