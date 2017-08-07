@@ -10,88 +10,66 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import replica3.entities.Record;
 
-/**
- * Client thread class for transferring a record from one Center Server to another through UDP/IP communication.
- * @author Jyotsana Gupta
- */
 public class RecTransferClientThread extends Thread
 {
-	private Record targetRec;
-	private String hostname;
+	private String status;
+	private String host;
 	private int port;
-	private String transferStatus;
+	private Record rec;
 	
-	/**
-	 * Constructor with all the attribute values provided as parameters.
-	 * @param 	targetRec		The record to be transferred
-	 * @param 	hostname		Hostname of the server contacted by this thread
-	 * @param 	port			Port number of the server contacted by this thread
-	 */
-	public RecTransferClientThread(Record targetRec, String hostname, int port)
+	public RecTransferClientThread(Record rec, String host, int port)
 	{
-		this.targetRec = targetRec;
-		this.hostname = hostname;
+		this.rec = rec;
+		this.host = host;
 		this.port = port;
 	}
 	
-	/**
-	 * Fetches the transfer status of this thread.
-	 * @return	Transfer status of this thread
-	 */
-	public String getTransferStatus()
+	public String getStatus()
 	{
-		return transferStatus;
+		return status;
 	}
 	
-	/**
-	 * Sends the target record to the remote Center Server and receives the transfer status message in return 
-	 * using UDP/IP socket communication.
-	 */
 	public void run()
 	{
-		DatagramSocket clientSocket = null;
-		
+		DatagramSocket socket = null;
 		try
 		{
-			clientSocket = new DatagramSocket();
-			InetAddress serverAddr = InetAddress.getByName(hostname);
-			int serverPort = port;
+			socket = new DatagramSocket();
+			InetAddress addr = InetAddress.getByName(host);
+			int portNum = port;
+			ByteArrayOutputStream bo = new ByteArrayOutputStream();
+			ObjectOutputStream oo = new ObjectOutputStream(bo);
+			oo.writeObject(rec);
+			byte[] reqMsg = bo.toByteArray();
+			oo.close();
+			bo.close();
+			DatagramPacket outPack = new DatagramPacket(reqMsg, reqMsg.length, addr, portNum);
+			socket.send(outPack);
 			
-			ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-			ObjectOutputStream objOutput = new ObjectOutputStream(byteOutput);
-			objOutput.writeObject(targetRec);
-			byte[] objReqMsg = byteOutput.toByteArray();
-			objOutput.close();
-			byteOutput.close();
-			
-			DatagramPacket requestPacket = new DatagramPacket(objReqMsg, objReqMsg.length, serverAddr, serverPort);
-			clientSocket.send(requestPacket);
-			
-			byte[] replyMsg = new byte[1000];
-			DatagramPacket replyPacket = new DatagramPacket(replyMsg, replyMsg.length);	
-			clientSocket.receive(replyPacket);
-			
-			transferStatus = new String(replyMsg).trim();			
+			byte[] repMsg = new byte[1000];
+			DatagramPacket inPack = new DatagramPacket(repMsg, repMsg.length);	
+			socket.receive(inPack);
+			status = new String(repMsg).trim();			
 		}
 		catch(SocketException se)
 		{
-			System.out.println("Exception occurred while sending record from UDP/IP client: " + se.getMessage());
-			transferStatus = "Failed to transfer record";
+			System.out.println("Exception in RecTransferClientThread: " + se.getMessage());
+			status = "Transfer record failed";
 		}
 		catch(UnknownHostException uhe)
 		{
-			System.out.println("Exception occurred while sending record from UDP/IP client: " + uhe.getMessage());
-			transferStatus = "Failed to transfer record";
+			System.out.println("Exception in RecTransferClientThread: " + uhe.getMessage());
+			status = "Transfer record failed";
 		}
 		catch(IOException ioe)
 		{
-			System.out.println("Exception occurred while sending record from UDP/IP client: " + ioe.getMessage());
-			transferStatus = "Failed to transfer record";
+			System.out.println("Exception in RecTransferClientThread: " + ioe.getMessage());
+			status = "Transfer record failed";
 		}
 		finally
 		{
-			if (clientSocket != null)
-				clientSocket.close();
+			if (socket != null)
+				socket.close();
 		}
 	}
 }

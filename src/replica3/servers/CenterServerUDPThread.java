@@ -193,7 +193,7 @@ public class CenterServerUDPThread extends Thread
 		String addStatus = null;
 		
 		//Adding the received record to this center server's database
-		boolean recAdded = recMgr.addRecord(targetRec);
+		boolean recAdded = recMgr.addRec(targetRec);
 		if (recAdded)
 			addStatus = "Record addition successful";
 		else
