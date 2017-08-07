@@ -1,6 +1,8 @@
 package frontend.services;
 
-public class ReplicaLeaderManager {
+import java.io.Serializable;
+
+public class ReplicaLeaderManager implements Serializable {
 
 	private static String whoIsLeader = "RM1"; 
 

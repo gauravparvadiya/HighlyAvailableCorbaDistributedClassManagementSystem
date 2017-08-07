@@ -3,11 +3,13 @@
  */
 package failuredetectionsys;
 
+import java.io.Serializable;
+
 /**
  * @author gauravparvadiya
  *
  */
-public class ReplicaInfo {
+public class ReplicaInfo implements Serializable {
 
 	private int portNo;
 	private String hostName;

@@ -23,11 +23,11 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 	private  Boolean statusOfRM1;
 	private  Boolean statusOfRM3;
 	private  String checkStatusOf;
-	private static Thread t1;
-	private static Thread t2;
-	private static Thread t3;
-	private static Thread t4;
-	private static Thread t5;
+	private  Thread t1;
+	private  Thread t2;
+	private  Thread t3;
+	private  Thread t4;
+	private  Thread t5;
 	FIFOBroadcastSys sys = null;
 	
 	replica1.servers.RMFailDetectUDPThread rmFail1;
@@ -130,10 +130,8 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 									socket1.receive(receive);
 									ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 									ObjectInputStream is = new ObjectInputStream(in);
-									Object o = is.readObject();
-									if (o instanceof replica1.servers.RMFailDetectUDPThread) {
-										rmFail1 = (replica1.servers.RMFailDetectUDPThread) o;
-									}
+									rmFail1 = (replica1.servers.RMFailDetectUDPThread)is.readObject();
+									
 									rmFail1.stopChildThread();
 									try {
 										rmFail1.stop();
@@ -171,10 +169,7 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 									socket1.receive(receive);
 									ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 									ObjectInputStream is = new ObjectInputStream(in);
-									Object o = is.readObject();
-									if (o instanceof replica3.servers.RMFailDetectUDPThread) {
-										rmFail3 = (replica3.servers.RMFailDetectUDPThread) o;
-									}
+									rmFail3 = (replica3.servers.RMFailDetectUDPThread)is.readObject();
 									rmFail3.stopChildThread();
 									try {
 										rmFail3.stop();

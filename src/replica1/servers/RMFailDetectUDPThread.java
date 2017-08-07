@@ -22,11 +22,11 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 	private Boolean statusOfRM2;
 	private Boolean statusOfRM3;
 	private String checkStatusOf;
-	private static Thread t1;
-	private static Thread t2;
-	private static Thread t3;
-	private static Thread t4;
-	private static Thread t5;
+	private Thread t1;
+	private Thread t2;
+	private Thread t3;
+	private Thread t4;
+	private Thread t5;
 	FIFOBroadcastSys sys = null;
 	replica2.servers.RMFailDetectUDPThread rmFail2;
 	replica3.servers.RMFailDetectUDPThread rmFail3;
@@ -113,22 +113,19 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 							if (new String(reply.getData()).trim().equalsIgnoreCase("RM2 is live")) {
 								statusOfRM2 = true;
 							} else {
-								
+
 								DatagramSocket socket1 = new DatagramSocket();
 								byte[] requestMessage = "RM2".getBytes();
 								DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
 										host, 6502);
 								socket1.send(request1);
-								
+
 								byte[] buffer = new byte[100];
 								DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
 								socket1.receive(receive);
 								ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 								ObjectInputStream is = new ObjectInputStream(in);
-								Object o = is.readObject();
-								if (o instanceof replica2.servers.RMFailDetectUDPThread) {
-									rmFail2 = (replica2.servers.RMFailDetectUDPThread) o;
-								}
+								rmFail2 = (replica2.servers.RMFailDetectUDPThread) is.readObject();
 								rmFail2.stopChildThread();
 								try {
 									rmFail2.stop();
@@ -167,10 +164,8 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 								socket1.receive(receive);
 								ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 								ObjectInputStream is = new ObjectInputStream(in);
-								Object o = is.readObject();
-								if (o instanceof replica3.servers.RMFailDetectUDPThread) {
-									rmFail3 = (replica3.servers.RMFailDetectUDPThread) o;
-								}
+								rmFail3 = (replica3.servers.RMFailDetectUDPThread) is
+										.readObject();
 								rmFail3.stopChildThread();
 								try {
 									rmFail3.stop();

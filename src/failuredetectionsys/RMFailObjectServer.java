@@ -4,12 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import replica1.servers.RMFailDetectUDPThread;
 
-public class RMFailObjectServer {
+public class RMFailObjectServer implements Serializable {
 
 	static RMFailDetectUDPThread rm1;
 	static replica2.servers.RMFailDetectUDPThread rm2;
@@ -37,19 +38,17 @@ public class RMFailObjectServer {
 						buffer = request.getData();
 						ByteArrayInputStream byteInput = new ByteArrayInputStream(buffer);
 						ObjectInputStream obj = new ObjectInputStream(byteInput);
-						Object obj1 = obj.readObject();
-						obj.close();
 						byteInput.close();
 						System.out.println("Here");
-						if (obj1 instanceof RMFailDetectUDPThread) {
+						if (obj.readObject() instanceof RMFailDetectUDPThread) {
 							System.out.println("RM1 initialized");
-							rm1 = (RMFailDetectUDPThread) obj1;
-						} else if (obj1 instanceof replica2.servers.RMFailDetectUDPThread) {
+							rm1 = (RMFailDetectUDPThread) obj.readObject();
+						} else if (obj.readObject() instanceof replica2.servers.RMFailDetectUDPThread) {
 							System.out.println("RM2 initialized");
-							rm2 = (replica2.servers.RMFailDetectUDPThread) obj1;
-						} else if (obj1 instanceof replica3.servers.RMFailDetectUDPThread) {
+							rm2 = (replica2.servers.RMFailDetectUDPThread) obj.readObject();
+						} else if (obj.readObject() instanceof replica3.servers.RMFailDetectUDPThread) {
 							System.out.println("RM3 initialized");
-							rm3 = (replica3.servers.RMFailDetectUDPThread) obj1;
+							rm3 = (replica3.servers.RMFailDetectUDPThread) obj.readObject();
 						}
 						serverSocket.close();
 					} catch (Exception e) {
@@ -73,7 +72,6 @@ public class RMFailObjectServer {
 					String message = null;
 					byte[] replyMessage = null;
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
-					ObjectOutputStream os = null;
 					DatagramPacket request = new DatagramPacket(buffer, buffer.length);
 					try {
 						
@@ -82,24 +80,24 @@ public class RMFailObjectServer {
 						serverSocket.receive(request);
 						System.out.println("request received in RMFailObject");
 						message = new String(request.getData());
-						os = new ObjectOutputStream(out);
+						ObjectOutputStream os = new ObjectOutputStream(out);
 						if (message.trim().equalsIgnoreCase("RM1")) {
 							System.out.println("Request received for RM1");
-							os.writeObject((Object)rm1);
+							os.writeObject(rm1);
 							replyMessage = out.toByteArray();
 						} else if (message.trim().equalsIgnoreCase("RM2")) {
 							System.out.println("Request received for RM2");
-							os.writeObject((Object)rm2);
+							os.writeObject(rm2);
 							replyMessage = out.toByteArray();
 						} else if (message.trim().equalsIgnoreCase("RM3")) {
 							System.out.println("Request received for RM3");
-							os.writeObject((Object)rm3);
+							os.writeObject(rm3);
 							replyMessage = out.toByteArray();
 						}
 						DatagramPacket reply = new DatagramPacket(buffer, buffer.length, request.getAddress(),
 								request.getPort());
 						serverSocket.send(reply);
-						os.flush();
+						os.close();
 						System.out.println("reply sent to RMFailObject");
 						serverSocket.close();
 					} catch (Exception e) {

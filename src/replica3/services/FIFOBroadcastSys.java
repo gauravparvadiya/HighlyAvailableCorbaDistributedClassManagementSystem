@@ -3,6 +3,7 @@ package replica3.services;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -18,7 +19,7 @@ import frontend.entities.Request;
  * @author Hirangi Naik
  * @author Jyotsana Gupta
  */
-public class FIFOBroadcastSys 
+public class FIFOBroadcastSys implements Serializable
 {
 	/**
 	 * Stores hostnames and port numbers of secondary servers.

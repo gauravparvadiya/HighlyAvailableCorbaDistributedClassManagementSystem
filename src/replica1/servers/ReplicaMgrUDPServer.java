@@ -17,7 +17,7 @@ import replica1.services.ReplicaMgrUDPClient;
  * and communicating its results to clients.
  * @author Jyotsana Gupta
  */
-public class ReplicaMgrUDPServer
+public class ReplicaMgrUDPServer implements Serializable
 {
 	private static final int SERVER_PORT = 6790;
 	private static ReplicaMgrService rmService = new ReplicaMgrService();

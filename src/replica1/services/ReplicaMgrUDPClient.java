@@ -15,7 +15,7 @@ import replica1.servers.RMFailDetectUDPThread;
  * UDP client class for Replica Manager.
  * @author Jyotsana Gupta
  */
-public class ReplicaMgrUDPClient
+public class ReplicaMgrUDPClient implements Serializable
 {
 	private RMFailDetectUDPThread rmFailDetectThread;
 	private String hostname;

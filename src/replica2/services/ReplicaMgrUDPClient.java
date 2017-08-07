@@ -3,6 +3,7 @@ package replica2.services;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -14,7 +15,7 @@ import replica2.servers.RMFailDetectUDPThread;
  * UDP client class for Replica Manager.
  * @author Jyotsana Gupta
  */
-public class ReplicaMgrUDPClient 
+public class ReplicaMgrUDPClient implements Serializable
 {
 	private RMFailDetectUDPThread rmFailDetectThread;
 	private String hostname;

@@ -16,22 +16,22 @@ import frontend.services.ReplicaLeaderManager;
 import replica3.services.FIFOBroadcastSys;
 
 public class RMFailDetectUDPThread extends Thread implements Serializable {
-	private  DatagramSocket serverSocket;
-	private  int serverPort;
-	private  ReplicaInfo info;
-	private  Boolean statusOfRM2;
-	private  Boolean statusOfRM1;
-	private  String checkStatusOf;
-	private static Thread t1;
-	private static Thread t2;
-	private static Thread t3;
-	private static Thread t4;
-	private static Thread t5;
+	private DatagramSocket serverSocket;
+	private int serverPort;
+	private ReplicaInfo info;
+	private Boolean statusOfRM2;
+	private Boolean statusOfRM1;
+	private String checkStatusOf;
+	private Thread t1;
+	private Thread t2;
+	private Thread t3;
+	private Thread t4;
+	private Thread t5;
 	FIFOBroadcastSys sys = null;
-	
+
 	replica2.servers.RMFailDetectUDPThread rmFail2;
 	replica1.servers.RMFailDetectUDPThread rmFail1;
-	
+
 	public RMFailDetectUDPThread() {
 		// TODO Auto-generated constructor stub
 	}
@@ -54,14 +54,14 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 		t4.stop();
 		t5.stop();
 	}
-	
+
 	public void run() {
 
 		ReplicaLeaderManager rl = new ReplicaLeaderManager();
 		if (rl.getWhoIsLeader().equals("RM3")) {
 			info.setIsLeader(true);
 		}
-		
+
 		List<String[]> secDetails = new ArrayList<String[]>();
 		String[] svr1 = new String[2];
 		svr1[0] = "localhost";
@@ -71,10 +71,10 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 		svr2[1] = "6794";
 		secDetails.add(svr1);
 		secDetails.add(svr2);
-		
-		//FIFOBroadcastSys sys = new FIFOBroadcastSys();
+
+		// FIFOBroadcastSys sys = new FIFOBroadcastSys();
 		sys.setSecServerDetails(secDetails);
-		
+
 		Thread t4 = new Thread(new Runnable() {
 			Boolean status = true;
 
@@ -99,21 +99,19 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 								statusOfRM1 = true;
 							} else {
 								DatagramSocket socket1 = new DatagramSocket();
-								
+
 								byte[] requestMessage = "RM2".getBytes();
 								DatagramPacket request1 = new DatagramPacket(requestMessage, requestMessage.length,
 										host, 6502);
 								socket1.send(request1);
-								
+
 								byte[] buffer = new byte[100];
 								DatagramPacket receive = new DatagramPacket(buffer, buffer.length);
 								socket1.receive(receive);
 								ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 								ObjectInputStream is = new ObjectInputStream(in);
-								Object o = is.readObject();
-								if (o instanceof replica2.servers.RMFailDetectUDPThread) {
-									rmFail2 = (replica2.servers.RMFailDetectUDPThread) o;
-								}
+								rmFail2 = (replica2.servers.RMFailDetectUDPThread) is
+										.readObject();
 								rmFail2.stopChildThread();
 								try {
 									rmFail2.stop();
@@ -121,7 +119,7 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 									System.out.println("RM2 stopped");
 								}
 								rmFail2.start();
-								
+
 								System.out.println("Restart RM2");
 							}
 							socket.close();
@@ -153,10 +151,8 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 								socket1.receive(receive);
 								ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 								ObjectInputStream is = new ObjectInputStream(in);
-								Object o = is.readObject();
-								if (o instanceof replica1.servers.RMFailDetectUDPThread) {
-									rmFail1 = (replica1.servers.RMFailDetectUDPThread) o;
-								}
+								rmFail1 = (replica1.servers.RMFailDetectUDPThread) is
+										.readObject();
 								rmFail1.stopChildThread();
 								try {
 									rmFail1.stop();
@@ -164,7 +160,7 @@ public class RMFailDetectUDPThread extends Thread implements Serializable {
 									System.out.println("RM1 stopped");
 								}
 								rmFail1.start();
-								
+
 								System.out.println("here 3");
 								System.out.println("Restart RM1");
 							}

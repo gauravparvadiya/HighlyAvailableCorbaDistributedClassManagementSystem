@@ -18,7 +18,7 @@ import replica1.servers.RMFailDetectUDPThread;
  * @author Jyotsana Gupta
  * @author Gauravkumar Parvadiya
  */
-public class RecordManagerFEImpl extends RecordManagerPOA
+public class RecordManagerFEImpl extends RecordManagerPOA implements Serializable
 {
 	/**
 	 * Instance of FIFOOrderSys for invoking FIFO total request ordering methods.
@@ -210,7 +210,7 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	{
 		System.out.println("in Crash Lead");
 		try {
-			RMFailDetectUDPThread rmFail1 = null;
+			//RMFailDetectUDPThread rmFail1 = null;
 			DatagramSocket socket1 = new DatagramSocket();
 			byte[] requestMessage = "RM1".getBytes();
 			InetAddress host = InetAddress.getByName("localhost");
@@ -226,16 +226,17 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			System.out.println("1");
 			ObjectInputStream is = new ObjectInputStream(in);
 			System.out.println("1");
-			Object o = is.readObject();
+			//Object o = is.readObject();
 			System.out.println("1");
-			if (o instanceof replica1.servers.RMFailDetectUDPThread) {
-				rmFail1 = (replica1.servers.RMFailDetectUDPThread) o;
-			}
-			if (rmFail1 != null) {
+			rm1 = (replica1.servers.RMFailDetectUDPThread) is.readObject();
+//			if (is.readObject() instanceof replica1.servers.RMFailDetectUDPThread) {
+//				
+//			}
+			if (rm1 != null) {
 				System.out.println("got object of Rm1");
-				rmFail1.stopChildThread();
+				rm1.stopChildThread();
 				try {
-					rmFail1.stop();
+					rm1.stop();
 				} catch (ThreadDeath e) {
 					System.out.println("RM1 stopped");
 				}
@@ -254,8 +255,8 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 	 */
 	public String crashSecondaryServer() 
 	{
-		replica3.servers.RMFailDetectUDPThread rmFail3 = null;
-		replica2.servers.RMFailDetectUDPThread rmFail2 = null;
+//		replica3.servers.RMFailDetectUDPThread rmFail3 = null;
+//		replica2.servers.RMFailDetectUDPThread rmFail2 = null;
 		
 		try {
 			DatagramSocket socket1 = new DatagramSocket();
@@ -269,13 +270,14 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			socket1.receive(receive);
 			ByteArrayInputStream in = new ByteArrayInputStream(buffer);
 			ObjectInputStream is = new ObjectInputStream(in);
-			Object o = is.readObject();
-			if (o instanceof replica3.servers.RMFailDetectUDPThread) {
-				rmFail3 = (replica3.servers.RMFailDetectUDPThread) o;
-			}
-			rmFail3.stopChildThread();
+			//Object o = is.readObject();
+			rm3 = (replica3.servers.RMFailDetectUDPThread) is.readObject();
+//			if (o instanceof replica3.servers.RMFailDetectUDPThread) {
+//				
+//			}
+			rm3.stopChildThread();
 			try {
-				rmFail3.stop();
+				rm3.stop();
 			} catch (ThreadDeath e) {
 				System.out.println("RM3 stopped");
 			}
@@ -291,17 +293,14 @@ public class RecordManagerFEImpl extends RecordManagerPOA
 			socket1.receive(receive);
 			in = new ByteArrayInputStream(buffer);
 			is = new ObjectInputStream(in);
-			o = is.readObject();
-			if (o instanceof replica2.servers.RMFailDetectUDPThread) {
-				rmFail2 = (replica2.servers.RMFailDetectUDPThread) o;
-			}
-			rmFail2.stopChildThread();
+			rm2 = (replica2.servers.RMFailDetectUDPThread) is.readObject();
+			rm2.stopChildThread();
 			try {
-				rmFail2.stop();
+				rm2.stop();
 			} catch (ThreadDeath e) {
 				System.out.println("RM2 stopped");
 			}
-			rmFail2.start();
+			rm2.start();
 			
 		} catch (Exception e) {
 			// TODO: handle exception
